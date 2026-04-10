@@ -9,6 +9,9 @@ export class ShipStatusChangedRealtimeEvent extends RealtimeEventBase {
     public readonly shipId: string,
     public readonly previousStatus: ShipOperationalStatus,
     public readonly newStatus: ShipOperationalStatus,
+    /** Persisted vessel position after the tick (from {@link Ship} `position`). */
+    public readonly latitude: number,
+    public readonly longitude: number,
   ) {
     super(occurredAt);
   }

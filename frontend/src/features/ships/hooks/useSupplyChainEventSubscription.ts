@@ -17,7 +17,7 @@ export function useSupplyChainEventSubscription() {
           const row = result.data?.supplyChainEventCreated as
             | SupplyChainEventCreatedPayload
             | undefined;
-          if (!row?.eventId) return;
+          if (!row?.id) return;
           setEvents((prev) => {
             const next = [row, ...prev];
             return next.slice(0, MAX_EVENTS);

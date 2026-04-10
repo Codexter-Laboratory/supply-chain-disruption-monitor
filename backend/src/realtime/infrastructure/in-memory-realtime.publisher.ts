@@ -30,6 +30,8 @@ export class InMemoryRealtimePublisher implements RealtimePublisherPort {
           shipId: payload.shipId,
           previousStatus: payload.previousStatus,
           newStatus: payload.newStatus,
+          latitude: payload.latitude,
+          longitude: payload.longitude,
         },
       });
       return;
@@ -39,9 +41,12 @@ export class InMemoryRealtimePublisher implements RealtimePublisherPort {
       await this.pubSub.publish(SUPPLY_CHAIN_EVENT_CREATED_TOPIC, {
         supplyChainEventCreated: {
           occurredAt: payload.occurredAt,
-          eventId: payload.eventId,
+          id: payload.eventId,
           shipId: payload.shipId,
           type: payload.type,
+          latitude: payload.latitude,
+          longitude: payload.longitude,
+          region: payload.region,
         },
       });
       return;

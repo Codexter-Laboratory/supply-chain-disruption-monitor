@@ -9,6 +9,9 @@ export class SupplyChainEventCreatedRealtimeEvent extends RealtimeEventBase {
     public readonly eventId: string,
     public readonly shipId: string,
     public readonly type: SupplyChainEventKind,
+    public readonly latitude: number | null,
+    public readonly longitude: number | null,
+    public readonly region: string | null,
   ) {
     super(occurredAt);
   }
