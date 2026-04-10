@@ -5,6 +5,7 @@ import { useEnergyPriceTrend } from '../features/pricing/hooks/useEnergyPriceTre
 import { NewsFeed } from '../features/news/components/NewsFeed';
 import { useRecentNews } from '../features/news/hooks/useRecentNews';
 import { ShipMap } from '../features/map/components/ShipMap';
+import { useShipMapFeatureCollection } from '../features/map/hooks/useShipMapFeatureCollection';
 import { useShipRealtimeMap } from '../features/map/hooks/useShipRealtimeMap';
 import { useShipsMapData } from '../features/map/hooks/useShipsMapData';
 
@@ -16,6 +17,7 @@ export function Dashboard() {
     mapData.points,
     mapData.dataUpdatedAt,
   );
+  const shipFeatureCollection = useShipMapFeatureCollection(mapPoints);
 
   const trend = useEnergyPriceTrend('OIL');
   const news = useRecentNews();
@@ -43,7 +45,7 @@ export function Dashboard() {
               <span className="badge">Live status</span>
             </div>
             <ShipMap
-              points={mapPoints}
+              featureCollection={shipFeatureCollection}
               mapboxToken={mapboxToken}
               isLoading={mapData.isLoading}
               error={mapData.error as Error | null}

@@ -1,9 +1,14 @@
 import { memo, useMemo } from 'react';
 import Map from 'react-map-gl/mapbox';
-import { Marker } from 'react-map-gl/mapbox';
+import { Layer, Source } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import type { ShipMapPoint } from '../types';
-import { ShipMarker } from './ShipMarker';
+import type { ShipMapFeatureCollection } from '../types';
+import {
+  SHIP_SOURCE_ID,
+  clusterCircleLayer,
+  clusterCountLayer,
+  unclusteredPointLayer,
+} from './ship-cluster-layers';
 
 const HORMUZ_VIEW = {
   longitude: 56.35,
@@ -12,19 +17,21 @@ const HORMUZ_VIEW = {
 } as const;
 
 export type ShipMapProps = {
-  points: ShipMapPoint[];
+  featureCollection: ShipMapFeatureCollection;
   mapboxToken: string | undefined;
   isLoading: boolean;
   error: Error | null;
 };
 
 export const ShipMap = memo(function ShipMap({
-  points,
+  featureCollection,
   mapboxToken,
   isLoading,
   error,
 }: ShipMapProps) {
   const initialViewState = useMemo(() => ({ ...HORMUZ_VIEW }), []);
+
+  const hasFeatures = featureCollection.features.length > 0;
 
   if (!mapboxToken?.trim()) {
     return (
@@ -49,7 +56,7 @@ export const ShipMap = memo(function ShipMap({
 
   return (
     <div className="ship-map">
-      {isLoading && points.length === 0 ? (
+      {isLoading && !hasFeatures ? (
         <div className="ship-map__loading state-message state-message--loading">
           <span className="spinner" aria-hidden />
           Loading fleet positions…
@@ -62,23 +69,18 @@ export const ShipMap = memo(function ShipMap({
         mapStyle="mapbox://styles/mapbox/dark-v11"
         style={{ width: '100%', height: '100%' }}
       >
-        {points.map((p) => (
-          <Marker
-            key={p.id}
-            longitude={p.longitude}
-            latitude={p.latitude}
-            anchor="center"
-          >
-            <ShipMarker
-              position={{
-                latitude: p.latitude,
-                longitude: p.longitude,
-              }}
-              status={p.status}
-              title={p.id}
-            />
-          </Marker>
-        ))}
+        <Source
+          id={SHIP_SOURCE_ID}
+          type="geojson"
+          data={featureCollection}
+          cluster
+          clusterMaxZoom={14}
+          clusterRadius={50}
+        >
+          <Layer {...clusterCircleLayer} />
+          <Layer {...clusterCountLayer} />
+          <Layer {...unclusteredPointLayer} />
+        </Source>
       </Map>
     </div>
   );
