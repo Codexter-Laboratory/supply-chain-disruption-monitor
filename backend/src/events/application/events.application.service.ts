@@ -48,7 +48,7 @@ const STATUS_CYCLE: ShipOperationalStatus[] = [
  * **Simulation tick (ordered side effects)**
  * 1. Persist **SupplyChainEvent** (system of record for the fact).
  * 2. Update **Ship** operational status via {@link ShipWritePort}.
- * 3. Publish **SupplyChainEventCreated** then **ShipStatusChanged** (both use persisted ids / statuses).
+ * 3. Publish **SupplyChainEventCreated** then **ShipStatusChanged** (geo + status from persisted state).
  *
  * **Errors & nulls (reads)**
  * - Unknown event id → `findSupplyChainEventById` returns `null`.
@@ -157,6 +157,9 @@ export class EventsApplicationService {
         saved.id,
         saved.shipId,
         saved.type,
+        saved.position?.latitude ?? null,
+        saved.position?.longitude ?? null,
+        saved.region,
       ),
     );
     await this.realtime.publish(
@@ -165,6 +168,8 @@ export class EventsApplicationService {
         ship.id,
         ship.currentStatus,
         updated.currentStatus,
+        nudged.latitude,
+        nudged.longitude,
       ),
     );
   }

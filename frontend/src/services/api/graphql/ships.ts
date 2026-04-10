@@ -26,6 +26,8 @@ export const SHIP_STATUS_CHANGED_SUBSCRIPTION = `
       shipId
       previousStatus
       newStatus
+      latitude
+      longitude
     }
   }
 `;
@@ -34,9 +36,12 @@ export const SUPPLY_CHAIN_EVENT_CREATED_SUBSCRIPTION = `
   subscription SupplyChainEventCreated {
     supplyChainEventCreated {
       occurredAt
-      eventId
+      id
       shipId
       type
+      latitude
+      longitude
+      region
     }
   }
 `;

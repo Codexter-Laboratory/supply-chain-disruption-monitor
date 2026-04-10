@@ -34,9 +34,17 @@ export function useShipStatusSubscription(): { flashShipId: string | null } {
             | {
                 shipId: string;
                 newStatus: string;
+                latitude: number;
+                longitude: number;
               }
             | undefined;
           if (!payload || !isShipStatus(payload.newStatus)) {
+            return;
+          }
+          if (
+            !Number.isFinite(payload.latitude) ||
+            !Number.isFinite(payload.longitude)
+          ) {
             return;
           }
           const newStatus = payload.newStatus;
@@ -46,7 +54,12 @@ export function useShipStatusSubscription(): { flashShipId: string | null } {
               if (!old) return old;
               const nextItems = old.items.map((ship) =>
                 ship.id === payload.shipId
-                  ? { ...ship, currentStatus: newStatus }
+                  ? {
+                      ...ship,
+                      currentStatus: newStatus,
+                      latitude: payload.latitude,
+                      longitude: payload.longitude,
+                    }
                   : ship,
               );
               return { ...old, items: nextItems };

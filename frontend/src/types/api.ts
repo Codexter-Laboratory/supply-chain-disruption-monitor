@@ -57,11 +57,16 @@ export interface ShipStatusChangedPayload {
   shipId: string;
   previousStatus: string;
   newStatus: string;
+  latitude: number;
+  longitude: number;
 }
 
 export interface SupplyChainEventCreatedPayload {
   occurredAt: string;
-  eventId: string;
+  id: string;
   shipId: string;
   type: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  region?: string | null;
 }

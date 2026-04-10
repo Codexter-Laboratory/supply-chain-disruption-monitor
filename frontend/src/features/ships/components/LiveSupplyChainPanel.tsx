@@ -31,7 +31,7 @@ export function LiveSupplyChainPanel({ events }: LiveSupplyChainPanelProps) {
       ) : (
         <ul className="event-list">
           {events.map((e) => (
-            <li key={e.eventId}>
+            <li key={e.id}>
               <time className="event-time" dateTime={e.occurredAt}>
                 {formatTimestamp(e.occurredAt)}
               </time>
