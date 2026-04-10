@@ -1,20 +1,26 @@
 import { LiveSupplyChainPanel } from '../features/ships/components/LiveSupplyChainPanel';
-import { ShipsList } from '../features/ships/components/ShipsList';
-import { useShips } from '../features/ships/hooks/useShips';
-import { useShipStatusSubscription } from '../features/ships/hooks/useShipStatusSubscription';
 import { useSupplyChainEventSubscription } from '../features/ships/hooks/useSupplyChainEventSubscription';
 import { EnergyTrendChart } from '../features/pricing/components/EnergyTrendChart';
 import { useEnergyPriceTrend } from '../features/pricing/hooks/useEnergyPriceTrend';
 import { NewsFeed } from '../features/news/components/NewsFeed';
 import { useRecentNews } from '../features/news/hooks/useRecentNews';
+import { ShipMap } from '../features/map/components/ShipMap';
+import { useShipRealtimeMap } from '../features/map/hooks/useShipRealtimeMap';
+import { useShipsMapData } from '../features/map/hooks/useShipsMapData';
 
 export function Dashboard() {
-  const { flashShipId } = useShipStatusSubscription();
   const { events } = useSupplyChainEventSubscription();
 
-  const ships = useShips();
+  const mapData = useShipsMapData();
+  const { points: mapPoints } = useShipRealtimeMap(
+    mapData.points,
+    mapData.dataUpdatedAt,
+  );
+
   const trend = useEnergyPriceTrend('OIL');
   const news = useRecentNews();
+
+  const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
   return (
     <div className="dashboard">
@@ -28,18 +34,21 @@ export function Dashboard() {
 
       <div className="dashboard-layout">
         <main className="dashboard-main">
-          <ShipsList
-            ships={ships.page?.items ?? []}
-            rangeLabel={ships.rangeLabel}
-            canPrev={ships.canPrev}
-            canNext={ships.canNext}
-            isLoading={ships.isLoading}
-            isFetching={ships.isFetching}
-            onPrev={ships.goPrev}
-            onNext={ships.goNext}
-            flashShipId={flashShipId}
-            error={ships.error as Error | null}
-          />
+          <section
+            className="panel panel--main ship-map-panel"
+            aria-label="Fleet map"
+          >
+            <div className="panel-head">
+              <h2 className="section-title">Fleet map</h2>
+              <span className="badge">Live status</span>
+            </div>
+            <ShipMap
+              points={mapPoints}
+              mapboxToken={mapboxToken}
+              isLoading={mapData.isLoading}
+              error={mapData.error as Error | null}
+            />
+          </section>
         </main>
 
         <aside className="dashboard-side" aria-label="Sidebar">
