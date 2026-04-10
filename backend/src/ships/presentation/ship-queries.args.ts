@@ -1,5 +1,13 @@
-import { ArgsType, Field, ID, Int } from '@nestjs/graphql';
-import { IsInt, IsString, Max, MaxLength, Min, MinLength } from 'class-validator';
+import { ArgsType, Field, Float, ID, Int } from '@nestjs/graphql';
+import {
+  IsInt,
+  IsNumber,
+  IsString,
+  Max,
+  MaxLength,
+  Min,
+  MinLength,
+} from 'class-validator';
 
 @ArgsType()
 export class ShipByIdArgs {
@@ -22,4 +30,31 @@ export class ShipsPageArgs {
   @Min(1)
   @Max(100)
   limit!: number;
+}
+
+@ArgsType()
+export class ShipsInBoundingBoxArgs {
+  @Field(() => Float)
+  @IsNumber()
+  @Min(-90)
+  @Max(90)
+  minLat!: number;
+
+  @Field(() => Float)
+  @IsNumber()
+  @Min(-90)
+  @Max(90)
+  maxLat!: number;
+
+  @Field(() => Float)
+  @IsNumber()
+  @Min(-180)
+  @Max(180)
+  minLng!: number;
+
+  @Field(() => Float)
+  @IsNumber()
+  @Min(-180)
+  @Max(180)
+  maxLng!: number;
 }

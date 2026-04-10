@@ -1,3 +1,5 @@
+import { Coordinates } from '../../common/domain/coordinates';
+import { Location } from '../../common/domain/location';
 import { InvalidDomainStateError } from '../../common/errors/domain.error';
 
 /** Cargo category for routing and capacity planning (domain vocabulary). */
@@ -10,7 +12,8 @@ export type ShipOperationalStatus =
   | 'BLOCKED'
   | 'DELAYED';
 
-export type ShipProps = {
+/** Primitives + enums for reconstitution (mappers, transitions). */
+export type ShipRestoreInput = {
   readonly id: string;
   readonly name: string;
   readonly imo: string;
@@ -18,6 +21,25 @@ export type ShipProps = {
   readonly cargoType: ShipCargoType;
   readonly capacity: string;
   readonly currentStatus: ShipOperationalStatus;
+  readonly latitude: number;
+  readonly longitude: number;
+  readonly originCountry: string;
+  readonly destinationCountry: string;
+  readonly ownerCompany: string;
+};
+
+type ShipInternalProps = {
+  readonly id: string;
+  readonly name: string;
+  readonly imo: string;
+  readonly country: string;
+  readonly cargoType: ShipCargoType;
+  readonly capacity: string;
+  readonly currentStatus: ShipOperationalStatus;
+  readonly position: Coordinates;
+  readonly origin: Location;
+  readonly destination: Location;
+  readonly ownerCompany: string;
 };
 
 const ALL_STATUSES: ShipOperationalStatus[] = [
@@ -61,9 +83,9 @@ function assertNonEmpty(label: string, value: string): string {
  * Reconstituted from persistence via {@link Ship.restore}; not constructed ad hoc outside tests.
  */
 export class Ship {
-  private constructor(private readonly props: ShipProps) {}
+  private constructor(private readonly props: ShipInternalProps) {}
 
-  static restore(raw: ShipProps): Ship {
+  static restore(raw: ShipRestoreInput): Ship {
     const id = assertNonEmpty('Ship id', raw.id);
     const name = assertNonEmpty('Ship name', raw.name);
     const imo = assertNonEmpty('Ship IMO', raw.imo);
@@ -85,15 +107,22 @@ export class Ship {
     if (!CARGO_TYPES.includes(raw.cargoType)) {
       throw new InvalidDomainStateError(`Unknown cargo type: ${raw.cargoType}`);
     }
-    const cargoType = raw.cargoType;
+    const ownerCompany = assertNonEmpty('Ship ownerCompany', raw.ownerCompany);
+    const position = Coordinates.restore(raw.latitude, raw.longitude);
+    const origin = Location.ofCountry(raw.originCountry);
+    const destination = Location.ofCountry(raw.destinationCountry);
     return new Ship({
       id,
       name,
       imo,
       country,
-      cargoType,
+      cargoType: raw.cargoType,
       capacity,
       currentStatus: raw.currentStatus,
+      position,
+      origin,
+      destination,
+      ownerCompany,
     });
   }
 
@@ -119,6 +148,23 @@ export class Ship {
     return this.props.currentStatus;
   }
 
+  /** Current reported position (map / geo queries). */
+  get position(): Coordinates {
+    return this.props.position;
+  }
+
+  get originCountry(): string {
+    return this.props.origin.country;
+  }
+
+  get destinationCountry(): string {
+    return this.props.destination.country;
+  }
+
+  get ownerCompany(): string {
+    return this.props.ownerCompany;
+  }
+
   get isUnderway(): boolean {
     return this.props.currentStatus === 'MOVING';
   }
@@ -138,8 +184,35 @@ export class Ship {
       );
     }
     return Ship.restore({
-      ...this.props,
+      id: this.props.id,
+      name: this.props.name,
+      imo: this.props.imo,
+      country: this.props.country,
+      cargoType: this.props.cargoType,
+      capacity: this.props.capacity,
       currentStatus: next,
+      latitude: this.props.position.latitude,
+      longitude: this.props.position.longitude,
+      originCountry: this.props.origin.country,
+      destinationCountry: this.props.destination.country,
+      ownerCompany: this.props.ownerCompany,
+    });
+  }
+
+  withPosition(next: Coordinates): Ship {
+    return Ship.restore({
+      id: this.props.id,
+      name: this.props.name,
+      imo: this.props.imo,
+      country: this.props.country,
+      cargoType: this.props.cargoType,
+      capacity: this.props.capacity,
+      currentStatus: this.props.currentStatus,
+      latitude: next.latitude,
+      longitude: next.longitude,
+      originCountry: this.props.origin.country,
+      destinationCountry: this.props.destination.country,
+      ownerCompany: this.props.ownerCompany,
     });
   }
 }

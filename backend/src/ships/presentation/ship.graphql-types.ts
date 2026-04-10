@@ -1,4 +1,4 @@
-import { Field, ID, ObjectType, registerEnumType } from '@nestjs/graphql';
+import { Field, Float, ID, ObjectType, registerEnumType } from '@nestjs/graphql';
 
 export enum ShipCargoTypeGql {
   OIL = 'OIL',
@@ -31,6 +31,21 @@ export class ShipGraphqlType {
 
   @Field()
   country!: string;
+
+  @Field(() => Float)
+  latitude!: number;
+
+  @Field(() => Float)
+  longitude!: number;
+
+  @Field()
+  originCountry!: string;
+
+  @Field()
+  destinationCountry!: string;
+
+  @Field()
+  ownerCompany!: string;
 
   @Field(() => ShipCargoTypeGql)
   cargoType!: ShipCargoTypeGql;

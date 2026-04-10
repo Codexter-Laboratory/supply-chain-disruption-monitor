@@ -4,7 +4,11 @@ import { graphqlArgsValidationPipe } from '../../common/utils/graphql-args-valid
 import { ShipApplicationService } from '../application/ship.application.service';
 import { ShipGraphqlType } from './ship.graphql-types';
 import { ShipPageGraphqlType } from './ship-page.graphql-types';
-import { ShipByIdArgs, ShipsPageArgs } from './ship-queries.args';
+import {
+  ShipByIdArgs,
+  ShipsInBoundingBoxArgs,
+  ShipsPageArgs,
+} from './ship-queries.args';
 import { toShipGraphql } from './ship.dto-mapper';
 import { toShipPageGraphql } from './ship-page.dto-mapper';
 
@@ -31,5 +35,18 @@ export class ShipsResolver {
       args.limit,
     );
     return toShipPageGraphql(page);
+  }
+
+  @Query(() => [ShipGraphqlType], { name: 'shipsInBoundingBox' })
+  async shipsInBoundingBox(
+    @Args() args: ShipsInBoundingBoxArgs,
+  ): Promise<ShipGraphqlType[]> {
+    const ships = await this.shipApplication.findShipsInBoundingBox({
+      minLatitude: args.minLat,
+      maxLatitude: args.maxLat,
+      minLongitude: args.minLng,
+      maxLongitude: args.maxLng,
+    });
+    return ships.map(toShipGraphql);
   }
 }

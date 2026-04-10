@@ -31,5 +31,10 @@ export function shipFromPrismaRow(row: PrismaShipRow): Ship {
     cargoType: cargoMap[row.cargoType],
     capacity: row.capacity.toString(),
     currentStatus: statusMap[row.currentStatus],
+    latitude: row.latitude,
+    longitude: row.longitude,
+    originCountry: row.originCountry,
+    destinationCountry: row.destinationCountry,
+    ownerCompany: row.ownerCompany,
   });
 }
