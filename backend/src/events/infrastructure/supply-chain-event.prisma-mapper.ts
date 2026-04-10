@@ -36,5 +36,8 @@ export function supplyChainEventFromPrismaRow(
     type: typeMap[row.type],
     timestamp: row.timestamp,
     description: row.description,
+    latitude: row.latitude,
+    longitude: row.longitude,
+    region: row.region,
   });
 }

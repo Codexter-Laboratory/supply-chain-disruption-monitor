@@ -21,5 +21,12 @@ export function toSupplyChainEventGraphql(
   dto.type = kindToGql[event.type];
   dto.timestamp = event.timestamp;
   dto.description = event.description;
+  /*
+   * Nullable scalars mirror an optional Coordinates value on the domain entity; the aggregate does
+   * not expose raw lat/lng fields. This flattening is deliberate for GraphQL consumers only.
+   */
+  dto.latitude = event.position?.latitude ?? null;
+  dto.longitude = event.position?.longitude ?? null;
+  dto.region = event.region;
   return dto;
 }

@@ -1,4 +1,4 @@
-import { Field, ID, ObjectType, registerEnumType } from '@nestjs/graphql';
+import { Field, Float, ID, ObjectType, registerEnumType } from '@nestjs/graphql';
 
 export enum SupplyChainEventKindGql {
   DELAY = 'DELAY',
@@ -28,4 +28,13 @@ export class SupplyChainEventGraphqlType {
 
   @Field()
   description!: string;
+
+  @Field(() => Float, { nullable: true })
+  latitude!: number | null;
+
+  @Field(() => Float, { nullable: true })
+  longitude!: number | null;
+
+  @Field({ nullable: true })
+  region!: string | null;
 }

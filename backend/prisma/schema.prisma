@@ -38,21 +38,27 @@ enum EnergyPriceType {
 }
 
 model Ship {
-  id            String     @id @default(cuid())
-  name          String
-  imo           String     @unique
-  country       String
-  cargoType     CargoType
-  capacity      Decimal    @db.Decimal(20, 2)
-  currentStatus ShipStatus
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  id                 String     @id @default(cuid())
+  name               String
+  imo                String     @unique
+  country            String
+  latitude           Float      @default(0)
+  longitude          Float      @default(0)
+  originCountry      String     @default("Unknown")
+  destinationCountry String     @default("Unknown")
+  ownerCompany       String     @default("Unknown")
+  cargoType          CargoType
+  capacity           Decimal    @db.Decimal(20, 2)
+  currentStatus      ShipStatus
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
 
   routeLegs ShipRouteLeg[]
   events    SupplyChainEvent[]
 
   @@index([currentStatus])
   @@index([cargoType])
+  @@index([latitude, longitude])
 }
 
 /// Historical route segment for a ship. Current segment has closedAt = null.
@@ -87,6 +93,9 @@ model SupplyChainEvent {
   type        SupplyChainEventType
   timestamp   DateTime
   description String
+  latitude    Float?
+  longitude   Float?
+  region      String?
 
   @@index([shipId, timestamp(sort: Desc)])
   @@index([timestamp(sort: Desc)])

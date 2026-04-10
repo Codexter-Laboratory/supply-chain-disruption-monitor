@@ -1,3 +1,4 @@
+import type { Coordinates } from '../../common/domain/coordinates';
 import type { ShipOperationalStatus } from '../domain/ship.entity';
 
 export const SHIP_WRITE_PORT = Symbol('SHIP_WRITE_PORT');
@@ -11,4 +12,6 @@ export interface ShipWritePort {
     shipId: string,
     status: ShipOperationalStatus,
   ): Promise<void>;
+
+  updatePosition(shipId: string, position: Coordinates): Promise<void>;
 }

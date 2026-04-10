@@ -26,6 +26,16 @@ export function toShipGraphql(ship: Ship): ShipGraphqlType {
   dto.name = ship.name;
   dto.imo = ship.imo;
   dto.country = ship.country;
+  /*
+   * GraphQL exposes scalar lat/lng; the domain keeps a single Coordinates value object on the ship
+   * and does not surface latitude/longitude as first-class primitives on Ship. Flattening here is
+   * intentional at the API boundary so transport matches common map clients.
+   */
+  dto.latitude = ship.position.latitude;
+  dto.longitude = ship.position.longitude;
+  dto.originCountry = ship.originCountry;
+  dto.destinationCountry = ship.destinationCountry;
+  dto.ownerCompany = ship.ownerCompany;
   dto.cargoType = cargoToGql[ship.cargoType];
   dto.capacity = ship.capacity;
   dto.currentStatus = statusToGql[ship.currentStatus];

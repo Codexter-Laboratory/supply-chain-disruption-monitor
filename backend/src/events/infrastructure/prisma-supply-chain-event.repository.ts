@@ -36,6 +36,11 @@ export class PrismaSupplyChainEventRepository
   }
 
   async insert(record: NewSupplyChainEventRecord): Promise<SupplyChainEvent> {
+    const hasCoords =
+      record.latitude != null &&
+      record.longitude != null &&
+      Number.isFinite(record.latitude) &&
+      Number.isFinite(record.longitude);
     const row = await this.prisma.supplyChainEvent.create({
       data: {
         shipId: record.shipId,
@@ -43,6 +48,10 @@ export class PrismaSupplyChainEventRepository
         type: supplyChainEventKindToPrisma(record.type),
         timestamp: record.timestamp,
         description: record.description,
+        ...(hasCoords
+          ? { latitude: record.latitude, longitude: record.longitude }
+          : {}),
+        ...(record.region !== undefined ? { region: record.region } : {}),
       },
     });
     return supplyChainEventFromPrismaRow(row);

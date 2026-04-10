@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import type { Coordinates } from '../../common/domain/coordinates';
 import { PrismaService } from '../../database/prisma.service';
 import type { ShipWritePort } from '../application/ship-write.port';
 import type { ShipOperationalStatus } from '../domain/ship.entity';
@@ -15,6 +16,16 @@ export class PrismaShipWriteAdapter implements ShipWritePort {
     await this.prisma.ship.update({
       where: { id: shipId },
       data: { currentStatus: shipOperationalStatusToPrisma[status] },
+    });
+  }
+
+  async updatePosition(shipId: string, position: Coordinates): Promise<void> {
+    await this.prisma.ship.update({
+      where: { id: shipId },
+      data: {
+        latitude: position.latitude,
+        longitude: position.longitude,
+      },
     });
   }
 }

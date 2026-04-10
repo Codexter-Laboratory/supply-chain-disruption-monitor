@@ -13,6 +13,9 @@ export type NewSupplyChainEventRecord = {
   readonly type: SupplyChainEventKind;
   readonly timestamp: Date;
   readonly description: string;
+  readonly latitude?: number | null;
+  readonly longitude?: number | null;
+  readonly region?: string | null;
 };
 
 /** Event persistence; domain entities only (no Prisma/GraphQL leakage). */

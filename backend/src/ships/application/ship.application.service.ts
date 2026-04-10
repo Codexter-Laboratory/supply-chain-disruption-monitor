@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { Ship } from '../domain/ship.entity';
 import type { ShipPage } from '../domain/ship-page';
+import type { ShipGeoBoundingBox } from './ship-geo-bounding-box';
 import {
   SHIP_REPOSITORY,
   ShipRepositoryPort,
@@ -39,5 +40,25 @@ export class ShipApplicationService {
     const rawLimit = Number.isFinite(limit) ? Math.floor(limit) : DEFAULT_LIMIT;
     const safeLimit = Math.min(Math.max(rawLimit, 1), MAX_LIMIT);
     return this.ships.findPage(safeOffset, safeLimit);
+  }
+
+  /**
+   * Map viewport / bounding-box reads (indexed lat/lng). Normalizes inverted min/max from callers.
+   *
+   * TODO: Repository filter assumes a standard axis-aligned box in degree space; antimeridian
+   * crossing (longitude wrapping at ±180°) is not handled — boxes that span the date line need a
+   * different query strategy later.
+   */
+  async findShipsInBoundingBox(box: ShipGeoBoundingBox): Promise<readonly Ship[]> {
+    const minLat = Math.min(box.minLatitude, box.maxLatitude);
+    const maxLat = Math.max(box.minLatitude, box.maxLatitude);
+    const minLng = Math.min(box.minLongitude, box.maxLongitude);
+    const maxLng = Math.max(box.minLongitude, box.maxLongitude);
+    return this.ships.findInBoundingBox({
+      minLatitude: minLat,
+      maxLatitude: maxLat,
+      minLongitude: minLng,
+      maxLongitude: maxLng,
+    });
   }
 }

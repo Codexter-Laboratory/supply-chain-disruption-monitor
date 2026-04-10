@@ -1,4 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Coordinates } from '../../common/domain/coordinates';
 import {
   REALTIME_PUBLISHER,
   RealtimePublisherPort,
@@ -17,6 +18,10 @@ import {
   SUPPLY_CHAIN_EVENT_REPOSITORY,
   SupplyChainEventRepositoryPort,
 } from './supply-chain-event.repository.port';
+import {
+  regionLabelForCoordinates,
+  tradeDestinationCoordinates,
+} from './simulation-tick-geo';
 
 const DEFAULT_EVENT_LIMIT = 20;
 const MAX_EVENT_LIMIT = 100;
@@ -85,18 +90,66 @@ export class EventsApplicationService {
     }
 
     const occurredAt = new Date();
+    const target = tradeDestinationCoordinates(ship.destinationCountry);
+    const stepDegrees = 0.0009;
+    const jitterDegrees = 0.00025;
+    const p = ship.position;
+    const dLat = target.latitude - p.latitude;
+    const dLng = target.longitude - p.longitude;
+    const len = Math.hypot(dLat, dLng);
+    const jitterLat = (Math.random() * 2 - 1) * jitterDegrees;
+    const jitterLng = (Math.random() * 2 - 1) * jitterDegrees;
+    let nudgedLat: number;
+    let nudgedLng: number;
+    if (len < 1e-8) {
+      nudgedLat = p.latitude + jitterLat;
+      nudgedLng = p.longitude + jitterLng;
+    } else {
+      const uy = dLat / len;
+      const ux = dLng / len;
+      nudgedLat = p.latitude + uy * stepDegrees + jitterLat;
+      nudgedLng = p.longitude + ux * stepDegrees + jitterLng;
+    }
+    let nudged: Coordinates;
+    try {
+      nudged = Coordinates.restore(nudgedLat, nudgedLng);
+    } catch (e) {
+      this.log.debug(
+        `simulationTick: keep position (${e instanceof Error ? e.message : e})`,
+      );
+      nudged = p;
+    }
+
+    const evJitter = 0.012;
+    const eventLat = p.latitude + (Math.random() * 2 - 1) * evJitter;
+    const eventLng = p.longitude + (Math.random() * 2 - 1) * evJitter;
+    let eventCoords: Coordinates;
+    try {
+      eventCoords = Coordinates.restore(eventLat, eventLng);
+    } catch (e) {
+      this.log.debug(
+        `simulationTick: event at ship position (${e instanceof Error ? e.message : e})`,
+      );
+      eventCoords = p;
+    }
+    const region = regionLabelForCoordinates(p);
+
     const saved = await this.events.insert({
       shipId: ship.id,
       routeLegId: null,
       type: 'DELAY',
       timestamp: occurredAt,
       description: 'Simulation: operational status rotation',
+      latitude: eventCoords.latitude,
+      longitude: eventCoords.longitude,
+      region,
     });
 
     await this.shipWrite.updateOperationalStatus(
       ship.id,
       updated.currentStatus,
     );
+    await this.shipWrite.updatePosition(ship.id, nudged);
 
     await this.realtime.publish(
       new SupplyChainEventCreatedRealtimeEvent(
