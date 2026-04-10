@@ -5,3 +5,14 @@ export type ShipMapPoint = {
   longitude: number;
   status: string;
 };
+
+/** GeoJSON passed to Mapbox `Source` (clustering); built only in hooks. */
+export type ShipMapFeatureCollection = {
+  type: 'FeatureCollection';
+  features: Array<{
+    type: 'Feature';
+    id: string;
+    geometry: { type: 'Point'; coordinates: [number, number] };
+    properties: { id: string; status: string };
+  }>;
+};
