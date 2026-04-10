@@ -1,0 +1,115 @@
+// Prisma schema outline — domain persistence for Supply Chain Disruption Monitor
+// Route history: ShipRouteLeg rows are append-only; current leg has closedAt = null
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum CargoType {
+  OIL
+  LNG
+  CONTAINER
+  BULK
+  OTHER
+}
+
+enum ShipStatus {
+  MOVING
+  WAITING
+  BLOCKED
+  DELAYED
+}
+
+enum SupplyChainEventType {
+  DELAY
+  INCIDENT
+  REROUTE
+  CLEARANCE
+}
+
+enum EnergyPriceType {
+  OIL
+  GAS
+}
+
+model Ship {
+  id            String     @id @default(cuid())
+  name          String
+  imo           String     @unique
+  country       String
+  cargoType     CargoType
+  capacity      Decimal    @db.Decimal(20, 2)
+  currentStatus ShipStatus
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  routeLegs ShipRouteLeg[]
+  events    SupplyChainEvent[]
+
+  @@index([currentStatus])
+  @@index([cargoType])
+}
+
+/// Historical route segment for a ship. Current segment has closedAt = null.
+model ShipRouteLeg {
+  id               String    @id @default(cuid())
+  shipId           String
+  ship             Ship      @relation(fields: [shipId], references: [id], onDelete: Cascade)
+  originPort       String
+  destinationPort  String
+  departureDate    DateTime
+  estimatedArrival DateTime
+  openedAt         DateTime  @default(now())
+  closedAt         DateTime?
+  sequence         Int
+
+  events SupplyChainEvent[]
+
+  @@unique([shipId, sequence])
+  @@index([shipId, closedAt])
+  @@index([shipId, sequence])
+  @@index([originPort, destinationPort])
+}
+
+/// Supply-chain events. Only the events module application layer may create/update events
+/// and apply side effects to ships (e.g. status). Ships module does not write events.
+model SupplyChainEvent {
+  id          String                @id @default(cuid())
+  shipId      String
+  ship        Ship                  @relation(fields: [shipId], references: [id], onDelete: Cascade)
+  routeLegId  String?
+  routeLeg    ShipRouteLeg?         @relation(fields: [routeLegId], references: [id], onDelete: SetNull)
+  type        SupplyChainEventType
+  timestamp   DateTime
+  description String
+
+  @@index([shipId, timestamp(sort: Desc)])
+  @@index([timestamp(sort: Desc)])
+}
+
+/// Append-only energy price observations (read-oriented for API consumers).
+model EnergyPrice {
+  id        String          @id @default(cuid())
+  type      EnergyPriceType
+  value     Decimal         @db.Decimal(20, 4)
+  timestamp DateTime
+
+  @@index([type, timestamp(sort: Desc)])
+}
+
+/// Ingested news items (read-oriented; independent of ships/events).
+model NewsItem {
+  id        String   @id @default(cuid())
+  title     String
+  source    String
+  timestamp DateTime
+  summary   String
+  url       String   @unique
+
+  @@index([timestamp(sort: Desc)])
+}
