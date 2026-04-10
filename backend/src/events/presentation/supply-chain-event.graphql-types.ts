@@ -35,6 +35,6 @@ export class SupplyChainEventGraphqlType {
   @Field(() => Float, { nullable: true })
   longitude!: number | null;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   region!: string | null;
 }
