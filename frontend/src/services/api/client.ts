@@ -1,9 +1,18 @@
 import { GraphQLClient } from 'graphql-request';
 import { createClient, type Client } from 'graphql-ws';
 
-const HTTP_ENDPOINT = '/graphql';
+/**
+ * graphql-request resolves the endpoint with `new URL(url)`; a path-only string is invalid in the
+ * browser. Use the current origin so Vite dev proxy (`/graphql` → :3000) still applies.
+ */
+function graphqlHttpEndpoint(): string {
+  if (typeof window === 'undefined') {
+    return 'http://127.0.0.1:5173/graphql';
+  }
+  return `${window.location.origin}/graphql`;
+}
 
-export const graphqlHttpClient = new GraphQLClient(HTTP_ENDPOINT);
+export const graphqlHttpClient = new GraphQLClient(graphqlHttpEndpoint());
 
 let wsClient: Client | null = null;
 
