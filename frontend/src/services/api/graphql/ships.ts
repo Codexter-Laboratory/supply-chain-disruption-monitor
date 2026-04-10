@@ -12,6 +12,8 @@ export const SHIPS_PAGE_QUERY = `
         cargoType
         capacity
         currentStatus
+        latitude
+        longitude
       }
     }
   }

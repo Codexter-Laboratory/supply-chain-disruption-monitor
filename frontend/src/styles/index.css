@@ -59,6 +59,62 @@ a {
   min-width: 0;
 }
 
+/* —— fleet map —— */
+.ship-map-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: min(58vh, 560px);
+}
+
+.ship-map {
+  position: relative;
+  flex: 1;
+  min-height: 360px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #cfd4dc;
+  background: #0f1419;
+}
+
+.ship-map--config,
+.ship-map--error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.ship-map__loading {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  margin: 0;
+  background: rgba(15, 20, 25, 0.72);
+  color: #e5e7eb;
+  font-size: 0.875rem;
+}
+
+.ship-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+}
+
+.ship-marker__dot {
+  display: block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--ship-marker-fill, #6b7280);
+  border: 2px solid rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35), 0 2px 8px rgba(0, 0, 0, 0.45);
+}
+
 .dashboard-side {
   flex: 1 1 35%;
   min-width: 0;

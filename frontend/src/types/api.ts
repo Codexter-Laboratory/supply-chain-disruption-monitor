@@ -15,6 +15,8 @@ export interface Ship {
   cargoType: ShipCargoType;
   capacity: string;
   currentStatus: ShipOperationalStatus;
+  latitude: number;
+  longitude: number;
 }
 
 export interface ShipPage {
