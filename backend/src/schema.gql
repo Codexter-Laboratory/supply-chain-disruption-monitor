@@ -1,0 +1,146 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type EnergyPrice {
+  id: ID!
+  timestamp: DateTime!
+  type: EnergyPriceKind!
+  value: String!
+}
+
+enum EnergyPriceKind {
+  GAS
+  OIL
+}
+
+type EnergyPriceTrend {
+  kind: EnergyPriceKind!
+  points: [EnergyPrice!]!
+  simpleTrend: EnergyPriceTrendDirection!
+}
+
+enum EnergyPriceTrendDirection {
+  DOWN
+  FLAT
+  UP
+}
+
+type NewsItem {
+  id: ID!
+  source: String!
+  summary: String!
+  timestamp: DateTime!
+  title: String!
+  url: String!
+}
+
+type Query {
+  energyPriceTrend(kind: EnergyPriceKind!, limit: Int! = 24): EnergyPriceTrend!
+  health: String!
+  recentEnergyPrices(limit: Int! = 50, type: EnergyPriceKind): [EnergyPrice!]!
+  recentNews(limit: Int! = 30): [NewsItem!]!
+  recentSupplyChainEvents(limit: Int! = 20, shipId: ID!): [SupplyChainEvent!]!
+  routeHistoryForShip(shipId: ID!): [RouteLeg!]!
+  ship(id: ID!): Ship
+  ships(limit: Int! = 20, offset: Int! = 0): ShipPage!
+  shipsInBoundingBox(maxLat: Float!, maxLng: Float!, minLat: Float!, minLng: Float!): [Ship!]!
+  supplyChainEvent(id: ID!): SupplyChainEvent
+}
+
+type RouteLeg {
+  closedAt: DateTime
+  departureDate: DateTime!
+  destinationPort: String!
+  estimatedArrival: DateTime!
+  id: ID!
+  openedAt: DateTime!
+  originPort: String!
+  sequence: Float!
+  shipId: ID!
+}
+
+type Ship {
+  capacity: String!
+  cargoType: ShipCargoType!
+  country: String!
+  currentStatus: ShipOperationalStatus!
+  destinationCountry: String!
+  id: ID!
+  imo: String!
+  latitude: Float!
+  longitude: Float!
+  name: String!
+  originCountry: String!
+  ownerCompany: String!
+}
+
+enum ShipCargoType {
+  BULK
+  CONTAINER
+  LNG
+  OIL
+  OTHER
+}
+
+enum ShipOperationalStatus {
+  BLOCKED
+  DELAYED
+  MOVING
+  WAITING
+}
+
+type ShipPage {
+  items: [Ship!]!
+  limit: Int!
+  offset: Int!
+  total: Int!
+}
+
+type ShipStatusChangedPayload {
+  latitude: Float!
+  longitude: Float!
+  newStatus: String!
+  occurredAt: DateTime!
+  previousStatus: String!
+  shipId: ID!
+}
+
+type Subscription {
+  shipStatusChanged: ShipStatusChangedPayload!
+  supplyChainEventCreated: SupplyChainEventCreatedPayload!
+}
+
+type SupplyChainEvent {
+  description: String!
+  id: ID!
+  latitude: Float
+  longitude: Float
+  region: String
+  routeLegId: ID
+  shipId: ID!
+  timestamp: DateTime!
+  type: SupplyChainEventKind!
+}
+
+type SupplyChainEventCreatedPayload {
+  id: ID!
+  latitude: Float
+  longitude: Float
+  occurredAt: DateTime!
+  region: String
+  shipId: ID!
+  type: String!
+}
+
+enum SupplyChainEventKind {
+  CLEARANCE
+  DELAY
+  INCIDENT
+  REROUTE
+}
