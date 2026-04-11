@@ -6,12 +6,15 @@ const EMPTY: ShipMapFeatureCollection = {
   features: [],
 };
 
+const EMPTY_HIGHLIGHTS = new Set<string>();
+
 /**
- * Memoized GeoJSON for map-native clustering. O(n) when `points` identity changes;
+ * Memoized GeoJSON for map-native clustering. O(n) when `points` or highlights change;
  * updates flow from subscription state without HTTP refetch.
  */
 export function useShipMapFeatureCollection(
   points: ShipMapPoint[],
+  highlightedShipIds: ReadonlySet<string> = EMPTY_HIGHLIGHTS,
 ): ShipMapFeatureCollection {
   return useMemo(() => {
     if (points.length === 0) return EMPTY;
@@ -27,8 +30,9 @@ export function useShipMapFeatureCollection(
         properties: {
           id: p.id,
           status: p.status,
+          recentlyUpdated: highlightedShipIds.has(p.id) ? 1 : 0,
         },
       })),
     };
-  }, [points]);
+  }, [points, highlightedShipIds]);
 }

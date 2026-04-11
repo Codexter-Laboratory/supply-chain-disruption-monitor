@@ -18,7 +18,8 @@ export interface ShipsListProps {
   isFetching: boolean;
   onPrev: () => void;
   onNext: () => void;
-  flashShipId?: string | null;
+  /** Ships to visually emphasize (e.g. after live position/status change). */
+  highlightedShipIds?: ReadonlySet<string>;
   error?: Error | null;
 }
 
@@ -31,7 +32,7 @@ export function ShipsList({
   isFetching,
   onPrev,
   onNext,
-  flashShipId,
+  highlightedShipIds,
   error,
 }: ShipsListProps) {
   return (
@@ -83,7 +84,9 @@ export function ShipsList({
                   <tr
                     key={s.id}
                     className={
-                      flashShipId === s.id ? styles.rowFlash : undefined
+                      highlightedShipIds?.has(s.id)
+                        ? styles.rowFlash
+                        : undefined
                     }
                   >
                     <td>{s.name}</td>
