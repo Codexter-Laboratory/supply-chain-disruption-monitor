@@ -55,17 +55,14 @@ export function useShipRealtimeMap(
       const t = setTimeout(() => {
         highlightTimersRef.current.delete(id);
         setHighlightedShipIds((prev) => {
-          const next = new Set(prev);
-          next.delete(id);
-          return next;
+          if (!prev.has(id)) return prev;
+          return new Set([...prev].filter((shipId) => shipId !== id));
         });
       }, HIGHLIGHT_MS);
       highlightTimersRef.current.set(id, t);
       setHighlightedShipIds((prev) => {
         if (prev.has(id)) return prev;
-        const next = new Set(prev);
-        next.add(id);
-        return next;
+        return new Set([...prev, id]);
       });
     },
     [clearHighlightTimer],
