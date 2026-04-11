@@ -1,0 +1,6 @@
+.shipMapPanel {
+  display: flex;
+  flex-direction: column;
+  min-height: min(58vh, 560px);
+  height: 60vh;
+}

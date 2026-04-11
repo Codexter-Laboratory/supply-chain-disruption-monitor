@@ -2,6 +2,7 @@ import { memo, useMemo } from 'react';
 import Map from 'react-map-gl/mapbox';
 import { Layer, Source } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import feedback from '../../../styles/feedback.module.css';
 import type { ShipMapFeatureCollection } from '../types';
 import {
   SHIP_SOURCE_ID,
@@ -9,6 +10,7 @@ import {
   clusterCountLayer,
   unclusteredPointLayer,
 } from './ship-cluster-layers';
+import styles from './ShipMap.module.css';
 
 const HORMUZ_VIEW = {
   longitude: 56.35,
@@ -35,8 +37,8 @@ export const ShipMap = memo(function ShipMap({
 
   if (!mapboxToken?.trim()) {
     return (
-      <div className="ship-map ship-map--config">
-        <p className="state-message state-message--empty">
+      <div className={`${styles.map} ${styles.config}`}>
+        <p className={feedback.stateMessageEmpty}>
           Set <code className="mono">VITE_MAPBOX_TOKEN</code> in{' '}
           <code className="mono">.env</code> to load the fleet map.
         </p>
@@ -46,8 +48,8 @@ export const ShipMap = memo(function ShipMap({
 
   if (error) {
     return (
-      <div className="ship-map ship-map--error">
-        <p className="state-message state-message--error">
+      <div className={`${styles.map} ${styles.error}`}>
+        <p className={feedback.stateMessageError}>
           {error.message || 'Could not load ship positions.'}
         </p>
       </div>
@@ -55,10 +57,10 @@ export const ShipMap = memo(function ShipMap({
   }
 
   return (
-    <div className="ship-map">
+    <div className={styles.map}>
       {isLoading && !hasFeatures ? (
-        <div className="ship-map__loading state-message state-message--loading">
-          <span className="spinner" aria-hidden />
+        <div className={styles.loading}>
+          <span className={feedback.spinner} aria-hidden />
           Loading fleet positions…
         </div>
       ) : null}

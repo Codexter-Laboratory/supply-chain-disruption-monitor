@@ -1,0 +1,72 @@
+.priceCurrent {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.65rem;
+  margin-bottom: 0.65rem;
+  padding: 0.5rem 0.65rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #eceef2;
+}
+
+.priceCurrentLabel {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6b7280;
+}
+
+.priceCurrentValue {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.pricePct {
+  font-size: 0.78rem;
+}
+
+.trend {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.trendInline {
+  font-size: 0.8rem;
+}
+
+.trendUp {
+  color: #137333;
+}
+
+.trendDown {
+  color: #c5221f;
+}
+
+.trendFlat {
+  color: #5c6570;
+}
+
+.sparkline {
+  color: #0b5fff;
+  display: block;
+  margin: 0.15rem 0 0.5rem;
+}
+
+.priceFoot {
+  list-style: none;
+  margin: 0.35rem 0 0;
+  padding: 0;
+  font-size: 0.78rem;
+}
+
+.priceFoot li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+  border-top: 1px solid #f0f2f5;
+}

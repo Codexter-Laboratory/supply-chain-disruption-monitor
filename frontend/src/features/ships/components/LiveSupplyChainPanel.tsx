@@ -1,4 +1,6 @@
 import type { SupplyChainEventCreatedPayload } from '../../../types/api';
+import feedback from '../../../styles/feedback.module.css';
+import styles from './LiveSupplyChainPanel.module.css';
 
 export interface LiveSupplyChainPanelProps {
   events: SupplyChainEventCreatedPayload[];
@@ -20,23 +22,26 @@ export function LiveSupplyChainPanel({ events }: LiveSupplyChainPanelProps) {
     <section className="dashboard-section panel panel--stacked">
       <div className="panel-head panel-head--live">
         <h2 className="section-title">Live Events</h2>
-        <span className="live-indicator" title="Subscribed via GraphQL">
+        <span
+          className={styles.liveIndicator}
+          title="Subscribed via GraphQL"
+        >
           LIVE
         </span>
       </div>
       {events.length === 0 ? (
-        <p className="state-message state-message--empty">
+        <p className={feedback.stateMessageEmpty}>
           No events yet. Enable simulation to see supply-chain activity.
         </p>
       ) : (
-        <ul className="event-list">
+        <ul className={styles.eventList}>
           {events.map((e) => (
             <li key={e.id}>
-              <time className="event-time" dateTime={e.occurredAt}>
+              <time className={styles.eventTime} dateTime={e.occurredAt}>
                 {formatTimestamp(e.occurredAt)}
               </time>
-              <span className="event-type">{e.type}</span>
-              <span className="muted event-ship">
+              <span className={styles.eventType}>{e.type}</span>
+              <span className={`muted ${styles.eventShip}`}>
                 Ship <span className="mono">{e.shipId.slice(0, 10)}…</span>
               </span>
             </li>
