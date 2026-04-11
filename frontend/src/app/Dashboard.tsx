@@ -10,6 +10,7 @@ import { useShipMapFeatureCollection } from '../features/map/hooks/useShipMapFea
 import { useShipRealtimeMap } from '../features/map/hooks/useShipRealtimeMap';
 import { useShipsInView } from '../features/map/hooks/useShipsInView';
 import type { MapViewportBounds } from '../features/map/types';
+import dashboardStyles from './Dashboard.module.css';
 
 export function Dashboard() {
   const { events } = useSupplyChainEventSubscription();
@@ -46,7 +47,7 @@ export function Dashboard() {
       <div className="dashboard-layout">
         <main className="dashboard-main">
           <section
-            className="panel panel--main ship-map-panel"
+            className={`${dashboardStyles.shipMapPanel} panel panel--main`}
             aria-label="Fleet map"
           >
             <div className="panel-head">

@@ -1,0 +1,46 @@
+.stateMessage {
+  margin: 0.5rem 0 0;
+  font-size: 0.875rem;
+}
+
+.stateMessageError {
+  margin: 0.5rem 0 0;
+  font-size: 0.875rem;
+  color: #b00020;
+  padding: 0.5rem 0.65rem;
+  background: #fef2f2;
+  border-radius: 6px;
+  border: 1px solid #fecaca;
+}
+
+.stateMessageEmpty {
+  margin: 0.5rem 0 0;
+  font-size: 0.875rem;
+  color: #5c6570;
+  padding: 0.75rem 0;
+}
+
+.stateMessageLoading {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: #5c6570;
+  padding: 0.75rem 0;
+  font-size: 0.875rem;
+}
+
+.spinner {
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 2px solid #e5e7eb;
+  border-top-color: #0b5fff;
+  border-radius: 50%;
+  animation: feedbackSpin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes feedbackSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,4 +1,13 @@
-import type { Ship } from '../../../types/api';
+import type { Ship, ShipOperationalStatus } from '../../../types/api';
+import feedback from '../../../styles/feedback.module.css';
+import styles from './ShipsList.module.css';
+
+const PILL_BY_STATUS = {
+  MOVING: styles.pillMoving,
+  WAITING: styles.pillWaiting,
+  BLOCKED: styles.pillBlocked,
+  DELAYED: styles.pillDelayed,
+} as Record<ShipOperationalStatus, string>;
 
 export interface ShipsListProps {
   ships: Ship[];
@@ -38,19 +47,19 @@ export function ShipsList({
       </div>
 
       {error ? (
-        <p className="state-message state-message--error" role="alert">
+        <p className={feedback.stateMessageError} role="alert">
           {error.message}
         </p>
       ) : null}
 
       {isLoading ? (
-        <div className="state-message state-message--loading">
-          <span className="spinner" aria-hidden />
+        <div className={feedback.stateMessageLoading}>
+          <span className={feedback.spinner} aria-hidden />
           <span>Loading ships…</span>
         </div>
       ) : (
         <>
-          <div className="pager">
+          <div className={styles.pager}>
             <button type="button" disabled={!canPrev} onClick={onPrev}>
               Previous
             </button>
@@ -58,8 +67,8 @@ export function ShipsList({
               Next
             </button>
           </div>
-          <div className="table-wrap">
-            <table className="table">
+          <div className={styles.tableWrap}>
+            <table className={styles.table}>
               <thead>
                 <tr>
                   <th>Name</th>
@@ -74,7 +83,7 @@ export function ShipsList({
                   <tr
                     key={s.id}
                     className={
-                      flashShipId === s.id ? 'table-row--flash' : undefined
+                      flashShipId === s.id ? styles.rowFlash : undefined
                     }
                   >
                     <td>{s.name}</td>
@@ -83,7 +92,7 @@ export function ShipsList({
                     <td>{s.cargoType}</td>
                     <td>
                       <span
-                        className={`pill pill-${s.currentStatus.toLowerCase()}`}
+                        className={`${styles.pill} ${PILL_BY_STATUS[s.currentStatus]}`}
                       >
                         {s.currentStatus}
                       </span>
@@ -94,7 +103,7 @@ export function ShipsList({
             </table>
           </div>
           {ships.length === 0 && !error ? (
-            <p className="state-message state-message--empty">
+            <p className={feedback.stateMessageEmpty}>
               No data available for this page.
             </p>
           ) : null}
