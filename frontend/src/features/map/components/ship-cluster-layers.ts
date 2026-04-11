@@ -53,8 +53,18 @@ export const unclusteredPointLayer: Omit<CircleLayerSpecification, 'source'> = {
   filter: ['!', ['has', 'point_count']],
   paint: {
     'circle-radius': 7,
-    'circle-stroke-width': 2,
-    'circle-stroke-color': 'rgba(255, 255, 255, 0.92)',
+    'circle-stroke-width': [
+      'case',
+      ['==', ['get', 'recentlyUpdated'], 1],
+      3.5,
+      2,
+    ],
+    'circle-stroke-color': [
+      'case',
+      ['==', ['get', 'recentlyUpdated'], 1],
+      'rgba(250, 204, 21, 0.95)',
+      'rgba(255, 255, 255, 0.92)',
+    ],
     'circle-color': [
       'match',
       ['get', 'status'],

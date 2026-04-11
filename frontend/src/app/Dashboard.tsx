@@ -1,6 +1,8 @@
 import { useCallback, useState } from 'react';
 import { LiveSupplyChainPanel } from '../features/ships/components/LiveSupplyChainPanel';
+import { ShipsList } from '../features/ships/components/ShipsList';
 import { useSupplyChainEventSubscription } from '../features/ships/hooks/useSupplyChainEventSubscription';
+import { useShips } from '../features/ships/hooks/useShips';
 import { EnergyTrendChart } from '../features/pricing/components/EnergyTrendChart';
 import { useEnergyPriceTrend } from '../features/pricing/hooks/useEnergyPriceTrend';
 import { NewsFeed } from '../features/news/components/NewsFeed';
@@ -14,6 +16,7 @@ import dashboardStyles from './Dashboard.module.css';
 
 export function Dashboard() {
   const { events } = useSupplyChainEventSubscription();
+  const shipsPage = useShips();
 
   const [viewportBounds, setViewportBounds] =
     useState<MapViewportBounds | null>(null);
@@ -23,11 +26,14 @@ export function Dashboard() {
   );
 
   const mapData = useShipsInView(viewportBounds);
-  const { points: mapPoints } = useShipRealtimeMap(
+  const { points: mapPoints, highlightedShipIds } = useShipRealtimeMap(
     mapData.points,
     mapData.dataUpdatedAt,
   );
-  const shipFeatureCollection = useShipMapFeatureCollection(mapPoints);
+  const shipFeatureCollection = useShipMapFeatureCollection(
+    mapPoints,
+    highlightedShipIds,
+  );
 
   const trend = useEnergyPriceTrend('OIL');
   const news = useRecentNews();
@@ -77,6 +83,18 @@ export function Dashboard() {
             items={news.data ?? []}
             isLoading={news.isLoading}
             error={news.error as Error | null}
+          />
+          <ShipsList
+            ships={shipsPage.page?.items ?? []}
+            rangeLabel={shipsPage.rangeLabel}
+            canPrev={shipsPage.canPrev}
+            canNext={shipsPage.canNext}
+            isLoading={shipsPage.isLoading}
+            isFetching={shipsPage.isFetching}
+            onPrev={shipsPage.goPrev}
+            onNext={shipsPage.goNext}
+            highlightedShipIds={highlightedShipIds}
+            error={shipsPage.error as Error | null}
           />
           <LiveSupplyChainPanel events={events} />
         </aside>

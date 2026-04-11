@@ -21,6 +21,6 @@ export type ShipMapFeatureCollection = {
     type: 'Feature';
     id: string;
     geometry: { type: 'Point'; coordinates: [number, number] };
-    properties: { id: string; status: string };
+    properties: { id: string; status: string; recentlyUpdated: number };
   }>;
 };
