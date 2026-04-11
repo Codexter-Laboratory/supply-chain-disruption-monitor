@@ -49,4 +49,18 @@ export class ShipsResolver {
     });
     return ships.map(toShipGraphql);
   }
+
+  /** Viewport-scoped fleet (same application path as `shipsInBoundingBox`; preferred for maps). */
+  @Query(() => [ShipGraphqlType], { name: 'shipsInView' })
+  async shipsInView(
+    @Args() args: ShipsInBoundingBoxArgs,
+  ): Promise<ShipGraphqlType[]> {
+    const ships = await this.shipApplication.findShipsInBoundingBox({
+      minLatitude: args.minLat,
+      maxLatitude: args.maxLat,
+      minLongitude: args.minLng,
+      maxLongitude: args.maxLng,
+    });
+    return ships.map(toShipGraphql);
+  }
 }

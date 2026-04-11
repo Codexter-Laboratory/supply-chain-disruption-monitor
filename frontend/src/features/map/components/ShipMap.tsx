@@ -1,9 +1,10 @@
-import { memo, useMemo } from 'react';
+import { memo, useCallback, useMemo } from 'react';
+import type { Map as MapboxMap } from 'mapbox-gl';
 import Map from 'react-map-gl/mapbox';
 import { Layer, Source } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import feedback from '../../../styles/feedback.module.css';
-import type { ShipMapFeatureCollection } from '../types';
+import type { MapViewportBounds, ShipMapFeatureCollection } from '../types';
 import {
   SHIP_SOURCE_ID,
   clusterCircleLayer,
@@ -18,20 +19,45 @@ const HORMUZ_VIEW = {
   zoom: 5.2,
 } as const;
 
+function readViewportBounds(map: MapboxMap): MapViewportBounds {
+  const b = map.getBounds();
+  if (!b) {
+    return { west: -180, south: -90, east: 180, north: 90 };
+  }
+  return {
+    west: b.getWest(),
+    south: b.getSouth(),
+    east: b.getEast(),
+    north: b.getNorth(),
+  };
+}
+
 export type ShipMapProps = {
   featureCollection: ShipMapFeatureCollection;
   mapboxToken: string | undefined;
   isLoading: boolean;
+  isRefreshing?: boolean;
   error: Error | null;
+  /** Fired when the map reports its geographic bounds (load + after pan/zoom). No API calls here. */
+  onViewportBoundsChange?: (bounds: MapViewportBounds) => void;
 };
 
 export const ShipMap = memo(function ShipMap({
   featureCollection,
   mapboxToken,
   isLoading,
+  isRefreshing = false,
   error,
+  onViewportBoundsChange,
 }: ShipMapProps) {
   const initialViewState = useMemo(() => ({ ...HORMUZ_VIEW }), []);
+
+  const emitBounds = useCallback(
+    (map: MapboxMap) => {
+      onViewportBoundsChange?.(readViewportBounds(map));
+    },
+    [onViewportBoundsChange],
+  );
 
   const hasFeatures = featureCollection.features.length > 0;
 
@@ -56,8 +82,13 @@ export const ShipMap = memo(function ShipMap({
     );
   }
 
+  const mapClassName =
+    isRefreshing && hasFeatures
+      ? `${styles.map} ${styles.refreshing}`
+      : styles.map;
+
   return (
-    <div className={styles.map}>
+    <div className={mapClassName}>
       {isLoading && !hasFeatures ? (
         <div className={styles.loading}>
           <span className={feedback.spinner} aria-hidden />
@@ -70,6 +101,8 @@ export const ShipMap = memo(function ShipMap({
         initialViewState={initialViewState}
         mapStyle="mapbox://styles/mapbox/dark-v11"
         style={{ width: '100%', height: '100%' }}
+        onLoad={(e) => emitBounds(e.target)}
+        onMoveEnd={(e) => emitBounds(e.target)}
       >
         <Source
           id={SHIP_SOURCE_ID}

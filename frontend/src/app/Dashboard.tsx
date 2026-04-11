@@ -1,3 +1,4 @@
+import { useCallback, useState } from 'react';
 import { LiveSupplyChainPanel } from '../features/ships/components/LiveSupplyChainPanel';
 import { useSupplyChainEventSubscription } from '../features/ships/hooks/useSupplyChainEventSubscription';
 import { EnergyTrendChart } from '../features/pricing/components/EnergyTrendChart';
@@ -7,13 +8,21 @@ import { useRecentNews } from '../features/news/hooks/useRecentNews';
 import { ShipMap } from '../features/map/components/ShipMap';
 import { useShipMapFeatureCollection } from '../features/map/hooks/useShipMapFeatureCollection';
 import { useShipRealtimeMap } from '../features/map/hooks/useShipRealtimeMap';
-import { useShipsMapData } from '../features/map/hooks/useShipsMapData';
+import { useShipsInView } from '../features/map/hooks/useShipsInView';
+import type { MapViewportBounds } from '../features/map/types';
 import dashboardStyles from './Dashboard.module.css';
 
 export function Dashboard() {
   const { events } = useSupplyChainEventSubscription();
 
-  const mapData = useShipsMapData();
+  const [viewportBounds, setViewportBounds] =
+    useState<MapViewportBounds | null>(null);
+  const handleViewportBoundsChange = useCallback(
+    (b: MapViewportBounds) => setViewportBounds(b),
+    [],
+  );
+
+  const mapData = useShipsInView(viewportBounds);
   const { points: mapPoints } = useShipRealtimeMap(
     mapData.points,
     mapData.dataUpdatedAt,
@@ -49,7 +58,9 @@ export function Dashboard() {
               featureCollection={shipFeatureCollection}
               mapboxToken={mapboxToken}
               isLoading={mapData.isLoading}
+              isRefreshing={mapData.isFetching && mapPoints.length > 0}
               error={mapData.error as Error | null}
+              onViewportBoundsChange={handleViewportBoundsChange}
             />
           </section>
         </main>
