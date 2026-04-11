@@ -1,4 +1,6 @@
 import type { NewsItem } from '../../../types/api';
+import feedback from '../../../styles/feedback.module.css';
+import styles from './NewsFeed.module.css';
 
 export interface NewsFeedProps {
   items: NewsItem[];
@@ -15,36 +17,36 @@ export function NewsFeed({ items, isLoading, error }: NewsFeedProps) {
       </div>
 
       {error ? (
-        <p className="state-message state-message--error" role="alert">
+        <p className={feedback.stateMessageError} role="alert">
           {error.message}
         </p>
       ) : null}
 
       {isLoading ? (
-        <div className="state-message state-message--loading">
-          <span className="spinner" aria-hidden />
+        <div className={feedback.stateMessageLoading}>
+          <span className={feedback.spinner} aria-hidden />
           <span>Loading news…</span>
         </div>
       ) : (
         <>
-          <ul className="news-list">
+          <ul className={styles.list}>
             {items.map((n) => (
               <li key={n.id}>
                 <a href={n.url} target="_blank" rel="noreferrer">
                   {n.title}
                 </a>
-                <div className="news-meta">
+                <div className={styles.meta}>
                   <span>{n.source}</span>
                   <span className="muted">
                     {new Date(n.timestamp).toLocaleString()}
                   </span>
                 </div>
-                <p className="news-summary">{n.summary}</p>
+                <p className={styles.summary}>{n.summary}</p>
               </li>
             ))}
           </ul>
           {items.length === 0 && !error ? (
-            <p className="state-message state-message--empty">
+            <p className={feedback.stateMessageEmpty}>
               No data available. Enable simulation news ingestion.
             </p>
           ) : null}

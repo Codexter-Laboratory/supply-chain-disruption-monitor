@@ -1,0 +1,39 @@
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.list li {
+  padding: 0.65rem 0;
+  border-bottom: 1px solid #f0f2f5;
+}
+
+.list li:first-child {
+  padding-top: 0.15rem;
+}
+
+.list a {
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.list a:hover {
+  text-decoration: underline;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  margin-top: 0.25rem;
+}
+
+.summary {
+  margin: 0.35rem 0 0;
+  font-size: 0.8rem;
+  color: #4b5563;
+  line-height: 1.4;
+}

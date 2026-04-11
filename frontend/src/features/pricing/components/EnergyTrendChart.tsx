@@ -1,4 +1,6 @@
 import type { EnergyPrice, EnergyPriceTrendDirection } from '../../../types/api';
+import feedback from '../../../styles/feedback.module.css';
+import styles from './EnergyTrendChart.module.css';
 
 export interface EnergyTrendChartProps {
   kind: string;
@@ -7,6 +9,12 @@ export interface EnergyTrendChartProps {
   isLoading: boolean;
   error?: Error | null;
 }
+
+const TREND_CLASS = {
+  UP: styles.trendUp,
+  DOWN: styles.trendDown,
+  FLAT: styles.trendFlat,
+} as Record<EnergyPriceTrendDirection, string>;
 
 function sparklinePath(values: number[], width: number, height: number): string {
   if (values.length === 0) return '';
@@ -61,35 +69,39 @@ export function EnergyTrendChart({
       </div>
 
       {error ? (
-        <p className="state-message state-message--error" role="alert">
+        <p className={feedback.stateMessageError} role="alert">
           {error.message}
         </p>
       ) : null}
 
       {isLoading ? (
-        <div className="state-message state-message--loading">
-          <span className="spinner" aria-hidden />
+        <div className={feedback.stateMessageLoading}>
+          <span className={feedback.spinner} aria-hidden />
           <span>Loading price trend…</span>
         </div>
       ) : (
         <>
           {currentValue !== undefined ? (
-            <div className="price-current">
-              <span className="price-current-label">Current</span>
-              <span className="price-current-value mono">{currentValue}</span>
+            <div className={styles.priceCurrent}>
+              <span className={styles.priceCurrentLabel}>Current</span>
+              <span className={`${styles.priceCurrentValue} mono`}>
+                {currentValue}
+              </span>
               <span
-                className={`trend trend-${simpleTrend.toLowerCase()} trend--inline`}
+                className={`${styles.trend} ${TREND_CLASS[simpleTrend]} ${styles.trendInline}`}
               >
                 {simpleTrend}
               </span>
               {pct !== null ? (
-                <span className="price-pct muted">({pct} vs window start)</span>
+                <span className={`${styles.pricePct} muted`}>
+                  ({pct} vs window start)
+                </span>
               ) : null}
             </div>
           ) : null}
 
           {nums.length < 2 && !error ? (
-            <p className="state-message state-message--empty">
+            <p className={feedback.stateMessageEmpty}>
               No data available yet. Run simulation / pricing ingestion to build
               history.
             </p>
@@ -97,7 +109,7 @@ export function EnergyTrendChart({
 
           {nums.length >= 2 ? (
             <svg
-              className="sparkline"
+              className={styles.sparkline}
               viewBox={`0 0 ${w} ${h}`}
               width="100%"
               height={h}
@@ -109,7 +121,7 @@ export function EnergyTrendChart({
           ) : null}
 
           {nums.length >= 2 ? (
-            <ul className="price-foot">
+            <ul className={styles.priceFoot}>
               {points.slice(-3).map((p) => (
                 <li key={p.id}>
                   <span className="mono">{p.value}</span>
