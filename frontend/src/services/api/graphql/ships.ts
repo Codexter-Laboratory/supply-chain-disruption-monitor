@@ -1,3 +1,19 @@
+export const SHIPS_IN_VIEW_QUERY = `
+  query ShipsInView($minLat: Float!, $maxLat: Float!, $minLng: Float!, $maxLng: Float!) {
+    shipsInView(minLat: $minLat, maxLat: $maxLat, minLng: $minLng, maxLng: $maxLng) {
+      id
+      name
+      imo
+      country
+      cargoType
+      capacity
+      currentStatus
+      latitude
+      longitude
+    }
+  }
+`;
+
 export const SHIPS_PAGE_QUERY = `
   query ShipsPage($offset: Int!, $limit: Int!) {
     ships(offset: $offset, limit: $limit) {

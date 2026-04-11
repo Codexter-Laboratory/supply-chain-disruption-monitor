@@ -50,6 +50,7 @@ type Query {
   ship(id: ID!): Ship
   ships(limit: Int! = 20, offset: Int! = 0): ShipPage!
   shipsInBoundingBox(maxLat: Float!, maxLng: Float!, minLat: Float!, minLng: Float!): [Ship!]!
+  shipsInView(maxLat: Float!, maxLng: Float!, minLat: Float!, minLng: Float!): [Ship!]!
   supplyChainEvent(id: ID!): SupplyChainEvent
 }
 

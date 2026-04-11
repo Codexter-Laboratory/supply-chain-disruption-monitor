@@ -1,3 +1,11 @@
+/** WGS-84 bounds from the map viewport (Mapbox `LngLatBounds`). */
+export type MapViewportBounds = {
+  west: number;
+  south: number;
+  east: number;
+  north: number;
+};
+
 /** Map view model derived from GraphQL `Ship` in hooks (not wire types). */
 export type ShipMapPoint = {
   id: string;

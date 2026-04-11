@@ -24,7 +24,7 @@ services:
     environment:
       DATABASE_URL: postgresql://scm:scm@postgres:5432/supply_chain_monitor?schema=public
       PORT: '3000'
-      SIMULATION_ENABLED: 'false'
+      SIMULATION_ENABLED: 'true'
     depends_on:
       postgres:
         condition: service_healthy

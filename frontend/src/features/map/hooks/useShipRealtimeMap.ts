@@ -48,18 +48,19 @@ export function useShipRealtimeMap(
           ) {
             return;
           }
-          setPoints((prev) =>
-            prev.map((p) =>
-              p.id === payload.shipId
-                ? {
-                    ...p,
-                    status: payload.newStatus,
-                    latitude: payload.latitude,
-                    longitude: payload.longitude,
-                  }
-                : p,
-            ),
-          );
+          setPoints((prev) => {
+            const i = prev.findIndex((p) => p.id === payload.shipId);
+            if (i === -1) return prev;
+            const cur = prev[i]!;
+            const next = [...prev];
+            next[i] = {
+              id: cur.id,
+              status: payload.newStatus,
+              latitude: payload.latitude,
+              longitude: payload.longitude,
+            };
+            return next;
+          });
         },
         error: () => {},
         complete: () => {},
