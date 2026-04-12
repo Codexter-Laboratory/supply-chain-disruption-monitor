@@ -41,8 +41,8 @@ export function Dashboard() {
   const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
   return (
-    <div className={`dashboard ${dashboardStyles.dashboardRoot}`}>
-      <header className="header">
+    <div className={dashboardStyles.rootGrid}>
+      <header className={`header ${dashboardStyles.headerBand}`}>
         <h1>Supply chain monitor</h1>
         <p className="muted">
           Operations view — live GraphQL subscriptions and cached queries (Vite
@@ -50,12 +50,12 @@ export function Dashboard() {
         </p>
       </header>
 
-      <div className={dashboardStyles.dashboardGrid}>
+      <div className={dashboardStyles.mapOilRow}>
         <section
-          className={`${dashboardStyles.cellMap} panel panel--main`}
+          className={`${dashboardStyles.mapPane} panel panel--main`}
           aria-label="Fleet map"
         >
-          <div className={`panel-head ${dashboardStyles.panelHeadPrimary}`}>
+          <div className={`panel-head ${dashboardStyles.mapPanelHead}`}>
             <h2 className="section-title">Fleet map</h2>
             <span className="badge">Live status</span>
           </div>
@@ -71,43 +71,47 @@ export function Dashboard() {
           </div>
         </section>
 
-        <aside
-          className={dashboardStyles.rightColumn}
-          aria-label="Prices, live events, and news"
-        >
-          <div className={dashboardStyles.rightBlock}>
-            <EnergyTrendChart
-              kind={trend.data?.kind ?? 'OIL'}
-              points={trend.data?.points ?? []}
-              simpleTrend={trend.data?.simpleTrend ?? 'FLAT'}
-              isLoading={trend.isLoading}
-              error={trend.error as Error | null}
-            />
-          </div>
-          <div className={dashboardStyles.rightBlock}>
-            <LiveSupplyChainPanel events={events} />
-          </div>
-          <div className={dashboardStyles.rightBlock}>
-            <NewsFeed
-              items={news.data ?? []}
-              isLoading={news.isLoading}
-              error={news.error as Error | null}
-            />
-          </div>
-        </aside>
+        <div className={dashboardStyles.energyPane}>
+          <EnergyTrendChart
+            kind={trend.data?.kind ?? 'OIL'}
+            points={trend.data?.points ?? []}
+            simpleTrend={trend.data?.simpleTrend ?? 'FLAT'}
+            isLoading={trend.isLoading}
+            error={trend.error as Error | null}
+          />
+        </div>
+      </div>
 
-        <div className={dashboardStyles.cellShips}>
-          <ShipsList
-            ships={shipsPage.page?.items ?? []}
-            rangeLabel={shipsPage.rangeLabel}
-            canPrev={shipsPage.canPrev}
-            canNext={shipsPage.canNext}
-            isLoading={shipsPage.isLoading}
-            isFetching={shipsPage.isFetching}
-            onPrev={shipsPage.goPrev}
-            onNext={shipsPage.goNext}
-            highlightedShipIds={highlightedShipIds}
-            error={shipsPage.error as Error | null}
+      <div className={dashboardStyles.shipsBand}>
+        <ShipsList
+          ships={shipsPage.page?.items ?? []}
+          rangeLabel={shipsPage.rangeLabel}
+          canPrev={shipsPage.canPrev}
+          canNext={shipsPage.canNext}
+          isLoading={shipsPage.isLoading}
+          isFetching={shipsPage.isFetching}
+          onPrev={shipsPage.goPrev}
+          onNext={shipsPage.goNext}
+          highlightedShipIds={highlightedShipIds}
+          error={shipsPage.error as Error | null}
+        />
+      </div>
+
+      <aside
+        className={dashboardStyles.eventsColumn}
+        aria-label="Live supply chain events"
+      >
+        <div className={dashboardStyles.eventsScroll}>
+          <LiveSupplyChainPanel events={events} />
+        </div>
+      </aside>
+
+      <div className={dashboardStyles.newsBand}>
+        <div className={dashboardStyles.newsScroll}>
+          <NewsFeed
+            items={news.data ?? []}
+            isLoading={news.isLoading}
+            error={news.error as Error | null}
           />
         </div>
       </div>

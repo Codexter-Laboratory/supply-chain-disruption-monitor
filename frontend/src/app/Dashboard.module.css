@@ -1,57 +1,50 @@
-/* Full width: map (~70%) + sidebar (~30%), ships full width. Sidebar uses
-   min-heights so flex children cannot collapse to zero (fixes “empty” column). */
+/* Map | oil (row 2 full width), then ships | live events, then news. */
 
-.dashboardRoot :global(.header) {
-  margin-bottom: 0.85rem;
-  padding-bottom: 0.75rem;
-  border-bottom: none;
-  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.06);
-}
-
-.dashboardGrid {
+.rootGrid {
   display: grid;
-  /* Second column never shrinks below readable width */
-  grid-template-columns: minmax(0, 7fr) minmax(280px, 3fr);
-  grid-template-rows: minmax(360px, min(68vh, 720px)) auto;
-  gap: 18px 20px;
+  grid-template-columns: 1fr 320px;
+  grid-template-rows:
+    auto
+    minmax(300px, min(58vh, 600px))
+    minmax(220px, auto)
+    auto;
+  gap: 16px;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 16px;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
   align-items: stretch;
 }
 
-.dashboardGrid :global(.panel) {
-  background: #fff;
-  border: none;
-  border-radius: 10px;
-  padding: 18px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.04);
-}
-
-.cellMap:global(.panel) {
-  padding: 18px 20px 20px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
-.panelHeadPrimary {
-  margin-bottom: 0.85rem;
-  padding-bottom: 0.65rem;
-  border-bottom: none;
-  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.06);
-}
-
-.panelHeadPrimary :global(.section-title) {
-  font-size: 1.25rem;
-  font-weight: 620;
-  letter-spacing: -0.02em;
-  color: #0f172a;
-}
-
-.cellMap {
-  grid-column: 1;
+.headerBand {
+  grid-column: 1 / -1;
   grid-row: 1;
   min-width: 0;
-  height: 100%;
-  max-height: min(68vh, 720px);
+}
+
+/* Row 2: map + oil prices, full width (spans both columns) */
+.mapOilRow {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 300px);
+  gap: 16px;
+  min-width: 0;
+  min-height: 0;
+  align-items: stretch;
+}
+
+.mapPane {
+  min-width: 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
+}
+
+.mapPanelHead {
+  flex-shrink: 0;
 }
 
 .mapBody {
@@ -62,79 +55,99 @@
   flex-direction: column;
 }
 
-/* Sidebar: flex stack with guaranteed slice heights (no collapse) */
-.rightColumn {
-  grid-column: 2;
-  grid-row: 1;
+.energyPane {
   min-width: 0;
-  width: 100%;
-  height: 100%;
-  max-height: min(68vh, 720px);
+  min-height: 0;
+  overflow: auto;
+  align-self: stretch;
+}
+
+/* Row 3 col 1: ships */
+.shipsBand {
+  grid-column: 1;
+  grid-row: 3;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* Row 3 col 2: live events */
+.eventsColumn {
+  grid-column: 2;
+  grid-row: 3;
+  min-width: 0;
+  min-height: 0;
+  max-height: min(55vh, 560px);
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  overflow-x: hidden;
+  overflow: hidden;
+}
+
+.eventsScroll {
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
 
-/* Content-sized blocks — never flex-shrink to zero; column scrolls if needed */
-.rightBlock {
-  flex: 0 0 auto;
+.eventsScroll :global(.panel-head) {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #fff;
 }
 
-.rightColumn :global(.panel) {
-  padding: 14px 16px;
-}
-
-.rightColumn :global(.panel-head) {
-  margin-bottom: 0.5rem;
-  padding-bottom: 0.5rem;
-  border-bottom: none;
-  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.05);
-}
-
-.rightColumn :global(.section-title) {
-  font-size: 0.9375rem;
-}
-
-.cellShips {
+.newsBand {
   grid-column: 1 / -1;
-  grid-row: 2;
+  grid-row: 4;
   min-width: 0;
 }
 
-.cellShips :global(.panel) {
-  padding: 16px 18px;
+.newsScroll {
+  max-height: min(40vh, 440px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.newsScroll :global(.panel-head) {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #fff;
 }
 
 @media (max-width: 900px) {
-  .dashboardGrid {
+  .rootGrid {
     grid-template-columns: 1fr;
     grid-template-rows: auto;
     gap: 16px;
   }
 
-  .cellMap,
-  .rightColumn,
-  .cellShips {
+  .headerBand {
     grid-column: 1;
     grid-row: auto;
+  }
+
+  .mapOilRow {
+    grid-column: 1;
+    grid-row: auto;
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(260px, 45vh) auto;
     max-height: none;
-    height: auto;
   }
 
-  .cellMap {
-    order: 1;
-    min-height: 50vh;
+  .shipsBand {
+    grid-column: 1;
+    grid-row: auto;
   }
 
-  .rightColumn {
-    order: 2;
-    overflow: visible;
+  .eventsColumn {
+    grid-column: 1;
+    grid-row: auto;
+    max-height: min(300px, 42vh);
   }
 
-  .cellShips {
-    order: 3;
+  .newsBand {
+    grid-column: 1;
+    grid-row: auto;
   }
 }
