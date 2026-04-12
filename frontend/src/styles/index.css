@@ -38,9 +38,11 @@ a {
 
 /* Dashboard shell */
 .dashboard {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 1.5rem 1.25rem 2.5rem;
+  max-width: none;
+  margin: 0;
+  width: 100%;
+  padding: clamp(24px, 2.5vw, 32px);
+  padding-bottom: clamp(28px, 3vw, 40px);
 }
 
 .header {

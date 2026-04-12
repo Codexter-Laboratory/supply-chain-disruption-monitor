@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { LiveSupplyChainPanel } from '../features/ships/components/LiveSupplyChainPanel';
 import { ShipsList } from '../features/ships/components/ShipsList';
 import { useSupplyChainEventSubscription } from '../features/ships/hooks/useSupplyChainEventSubscription';
@@ -40,6 +40,23 @@ export function Dashboard() {
 
   const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
+  const fleetKpi = useMemo(() => {
+    let delayed = 0;
+    let blocked = 0;
+    let active = 0;
+    for (const p of mapPoints) {
+      if (p.status === 'DELAYED') delayed += 1;
+      else if (p.status === 'BLOCKED') blocked += 1;
+      else if (p.status === 'MOVING') active += 1;
+    }
+    return {
+      total: mapPoints.length,
+      delayed,
+      blocked,
+      active,
+    };
+  }, [mapPoints]);
+
   return (
     <div className={`dashboard ${dashboardStyles.dashboardRoot}`}>
       <header className="header">
@@ -49,6 +66,33 @@ export function Dashboard() {
           proxy to API :3000).
         </p>
       </header>
+
+      <div className={dashboardStyles.kpiRow} aria-label="Fleet summary">
+        <div className={dashboardStyles.kpiItem}>
+          <span className={dashboardStyles.kpiLabel}>Total ships</span>
+          <span className={dashboardStyles.kpiValue}>{fleetKpi.total}</span>
+        </div>
+        <div className={dashboardStyles.kpiItem}>
+          <span className={dashboardStyles.kpiLabel}>Active</span>
+          <span className={dashboardStyles.kpiValue}>{fleetKpi.active}</span>
+        </div>
+        <div className={dashboardStyles.kpiItem}>
+          <span className={dashboardStyles.kpiLabel}>Delayed</span>
+          <span
+            className={`${dashboardStyles.kpiValue} ${dashboardStyles.kpiValueWarn}`}
+          >
+            {fleetKpi.delayed}
+          </span>
+        </div>
+        <div className={dashboardStyles.kpiItem}>
+          <span className={dashboardStyles.kpiLabel}>Blocked</span>
+          <span
+            className={`${dashboardStyles.kpiValue} ${dashboardStyles.kpiValueAlert}`}
+          >
+            {fleetKpi.blocked}
+          </span>
+        </div>
+      </div>
 
       <div className={dashboardStyles.dashboardGrid}>
         <section
@@ -71,17 +115,32 @@ export function Dashboard() {
           </div>
         </section>
 
-        <div className={dashboardStyles.cellEnergy}>
-          <EnergyTrendChart
-            kind={trend.data?.kind ?? 'OIL'}
-            points={trend.data?.points ?? []}
-            simpleTrend={trend.data?.simpleTrend ?? 'FLAT'}
-            isLoading={trend.isLoading}
-            error={trend.error as Error | null}
-          />
-        </div>
+        <aside
+          className={dashboardStyles.rightColumn}
+          aria-label="Prices, live events, and news"
+        >
+          <div className={dashboardStyles.rightBlock}>
+            <EnergyTrendChart
+              kind={trend.data?.kind ?? 'OIL'}
+              points={trend.data?.points ?? []}
+              simpleTrend={trend.data?.simpleTrend ?? 'FLAT'}
+              isLoading={trend.isLoading}
+              error={trend.error as Error | null}
+            />
+          </div>
+          <div className={dashboardStyles.rightBlock}>
+            <LiveSupplyChainPanel events={events} />
+          </div>
+          <div className={dashboardStyles.rightBlock}>
+            <NewsFeed
+              items={news.data ?? []}
+              isLoading={news.isLoading}
+              error={news.error as Error | null}
+            />
+          </div>
+        </aside>
 
-        <div className={`${dashboardStyles.cellShips} ${dashboardStyles.shipsScroller}`}>
+        <div className={dashboardStyles.cellShips}>
           <ShipsList
             ships={shipsPage.page?.items ?? []}
             rangeLabel={shipsPage.rangeLabel}
@@ -94,19 +153,6 @@ export function Dashboard() {
             highlightedShipIds={highlightedShipIds}
             error={shipsPage.error as Error | null}
           />
-        </div>
-
-        <div className={dashboardStyles.rightStack}>
-          <div className={dashboardStyles.eventScroll}>
-            <LiveSupplyChainPanel events={events} />
-          </div>
-          <div className={dashboardStyles.newsScroll}>
-            <NewsFeed
-              items={news.data ?? []}
-              isLoading={news.isLoading}
-              error={news.error as Error | null}
-            />
-          </div>
         </div>
       </div>
     </div>
