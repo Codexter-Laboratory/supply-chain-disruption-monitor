@@ -41,7 +41,7 @@ export function Dashboard() {
   const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
   return (
-    <div className="dashboard">
+    <div className={`dashboard ${dashboardStyles.dashboardRoot}`}>
       <header className="header">
         <h1>Supply chain monitor</h1>
         <p className="muted">
@@ -50,16 +50,16 @@ export function Dashboard() {
         </p>
       </header>
 
-      <div className="dashboard-layout">
-        <main className="dashboard-main">
-          <section
-            className={`${dashboardStyles.shipMapPanel} panel panel--main`}
-            aria-label="Fleet map"
-          >
-            <div className="panel-head">
-              <h2 className="section-title">Fleet map</h2>
-              <span className="badge">Live status</span>
-            </div>
+      <div className={dashboardStyles.dashboardGrid}>
+        <section
+          className={`${dashboardStyles.cellMap} panel panel--main`}
+          aria-label="Fleet map"
+        >
+          <div className={`panel-head ${dashboardStyles.panelHeadPrimary}`}>
+            <h2 className="section-title">Fleet map</h2>
+            <span className="badge">Live status</span>
+          </div>
+          <div className={dashboardStyles.mapBody}>
             <ShipMap
               featureCollection={shipFeatureCollection}
               mapboxToken={mapboxToken}
@@ -68,10 +68,10 @@ export function Dashboard() {
               error={mapData.error as Error | null}
               onViewportBoundsChange={handleViewportBoundsChange}
             />
-          </section>
-        </main>
+          </div>
+        </section>
 
-        <aside className="dashboard-side" aria-label="Sidebar">
+        <div className={dashboardStyles.cellEnergy}>
           <EnergyTrendChart
             kind={trend.data?.kind ?? 'OIL'}
             points={trend.data?.points ?? []}
@@ -79,11 +79,9 @@ export function Dashboard() {
             isLoading={trend.isLoading}
             error={trend.error as Error | null}
           />
-          <NewsFeed
-            items={news.data ?? []}
-            isLoading={news.isLoading}
-            error={news.error as Error | null}
-          />
+        </div>
+
+        <div className={`${dashboardStyles.cellShips} ${dashboardStyles.shipsScroller}`}>
           <ShipsList
             ships={shipsPage.page?.items ?? []}
             rangeLabel={shipsPage.rangeLabel}
@@ -96,8 +94,20 @@ export function Dashboard() {
             highlightedShipIds={highlightedShipIds}
             error={shipsPage.error as Error | null}
           />
-          <LiveSupplyChainPanel events={events} />
-        </aside>
+        </div>
+
+        <div className={dashboardStyles.rightStack}>
+          <div className={dashboardStyles.eventScroll}>
+            <LiveSupplyChainPanel events={events} />
+          </div>
+          <div className={dashboardStyles.newsScroll}>
+            <NewsFeed
+              items={news.data ?? []}
+              isLoading={news.isLoading}
+              error={news.error as Error | null}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

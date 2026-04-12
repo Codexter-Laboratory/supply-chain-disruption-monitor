@@ -1,11 +1,11 @@
 .liveIndicator {
-  font-size: 0.65rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  padding: 0.2rem 0.45rem;
-  border-radius: 4px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 0.22rem 0.5rem;
+  border-radius: 6px;
   color: #fff;
-  background: #c5221f;
+  background: #dc2626;
   animation: livePulse 2s ease-in-out infinite;
 }
 
@@ -15,7 +15,7 @@
     opacity: 1;
   }
   50% {
-    opacity: 0.72;
+    opacity: 0.75;
   }
 }
 
@@ -30,26 +30,32 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0.2rem;
-  padding: 0.55rem 0;
+  gap: 0.25rem;
+  padding: 0.65rem 0;
   border-bottom: 1px solid #f0f2f5;
 }
 
 .eventList li:first-child {
-  padding-top: 0.15rem;
+  padding-top: 0.2rem;
+}
+
+.eventList li:last-child {
+  border-bottom: none;
 }
 
 .eventTime {
   font-weight: 600;
-  color: #374151;
-  font-size: 0.78rem;
+  color: #64748b;
+  font-size: 0.75rem;
 }
 
 .eventType {
-  font-weight: 700;
-  color: #111827;
+  font-weight: 600;
+  color: #0f172a;
+  letter-spacing: -0.01em;
 }
 
 .eventShip {
-  font-size: 0.78rem;
+  font-size: 0.75rem;
+  color: #64748b;
 }
