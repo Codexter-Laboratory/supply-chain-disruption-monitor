@@ -33,6 +33,43 @@
   background: #fafbfc;
 }
 
+.tableInner {
+  position: relative;
+}
+
+.tableBodyLoader {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 2.75rem;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(248, 250, 252, 0.78);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.tbodyMuted {
+  opacity: 0.45;
+}
+
+.tbodyLoadingCell {
+  border-bottom: none !important;
+  padding: 2.5rem 1rem !important;
+  vertical-align: middle;
+}
+
+.tbodyLoadingInner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
 .table {
   width: 100%;
   border-collapse: collapse;

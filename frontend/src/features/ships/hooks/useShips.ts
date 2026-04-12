@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
 import { fetchShipsPage } from '../../../services/api/ships';
 
@@ -10,6 +10,7 @@ export function useShips() {
   const query = useQuery({
     queryKey: ['ships', { offset, limit: PAGE_SIZE }] as const,
     queryFn: () => fetchShipsPage({ offset, limit: PAGE_SIZE }),
+    placeholderData: keepPreviousData,
   });
 
   const page = query.data;
