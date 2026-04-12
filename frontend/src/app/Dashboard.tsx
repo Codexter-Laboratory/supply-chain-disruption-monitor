@@ -41,7 +41,7 @@ export function Dashboard() {
   const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
   return (
-    <div className="dashboard">
+    <div className={`dashboard ${dashboardStyles.dashboardRoot}`}>
       <header className="header">
         <h1>Supply chain monitor</h1>
         <p className="muted">
@@ -50,16 +50,16 @@ export function Dashboard() {
         </p>
       </header>
 
-      <div className="dashboard-layout">
-        <main className="dashboard-main">
-          <section
-            className={`${dashboardStyles.shipMapPanel} panel panel--main`}
-            aria-label="Fleet map"
-          >
-            <div className="panel-head">
-              <h2 className="section-title">Fleet map</h2>
-              <span className="badge">Live status</span>
-            </div>
+      <div className={dashboardStyles.dashboardGrid}>
+        <section
+          className={`${dashboardStyles.cellMap} panel panel--main`}
+          aria-label="Fleet map"
+        >
+          <div className={`panel-head ${dashboardStyles.panelHeadPrimary}`}>
+            <h2 className="section-title">Fleet map</h2>
+            <span className="badge">Live status</span>
+          </div>
+          <div className={dashboardStyles.mapBody}>
             <ShipMap
               featureCollection={shipFeatureCollection}
               mapboxToken={mapboxToken}
@@ -68,22 +68,35 @@ export function Dashboard() {
               error={mapData.error as Error | null}
               onViewportBoundsChange={handleViewportBoundsChange}
             />
-          </section>
-        </main>
+          </div>
+        </section>
 
-        <aside className="dashboard-side" aria-label="Sidebar">
-          <EnergyTrendChart
-            kind={trend.data?.kind ?? 'OIL'}
-            points={trend.data?.points ?? []}
-            simpleTrend={trend.data?.simpleTrend ?? 'FLAT'}
-            isLoading={trend.isLoading}
-            error={trend.error as Error | null}
-          />
-          <NewsFeed
-            items={news.data ?? []}
-            isLoading={news.isLoading}
-            error={news.error as Error | null}
-          />
+        <aside
+          className={dashboardStyles.rightColumn}
+          aria-label="Prices, live events, and news"
+        >
+          <div className={dashboardStyles.rightBlock}>
+            <EnergyTrendChart
+              kind={trend.data?.kind ?? 'OIL'}
+              points={trend.data?.points ?? []}
+              simpleTrend={trend.data?.simpleTrend ?? 'FLAT'}
+              isLoading={trend.isLoading}
+              error={trend.error as Error | null}
+            />
+          </div>
+          <div className={dashboardStyles.rightBlock}>
+            <LiveSupplyChainPanel events={events} />
+          </div>
+          <div className={dashboardStyles.rightBlock}>
+            <NewsFeed
+              items={news.data ?? []}
+              isLoading={news.isLoading}
+              error={news.error as Error | null}
+            />
+          </div>
+        </aside>
+
+        <div className={dashboardStyles.cellShips}>
           <ShipsList
             ships={shipsPage.page?.items ?? []}
             rangeLabel={shipsPage.rangeLabel}
@@ -96,8 +109,7 @@ export function Dashboard() {
             highlightedShipIds={highlightedShipIds}
             error={shipsPage.error as Error | null}
           />
-          <LiveSupplyChainPanel events={events} />
-        </aside>
+        </div>
       </div>
     </div>
   );
