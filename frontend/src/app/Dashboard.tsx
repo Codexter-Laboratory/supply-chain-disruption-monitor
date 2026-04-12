@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { LiveSupplyChainPanel } from '../features/ships/components/LiveSupplyChainPanel';
 import { ShipsList } from '../features/ships/components/ShipsList';
 import { useSupplyChainEventSubscription } from '../features/ships/hooks/useSupplyChainEventSubscription';
@@ -40,23 +40,6 @@ export function Dashboard() {
 
   const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
-  const fleetKpi = useMemo(() => {
-    let delayed = 0;
-    let blocked = 0;
-    let active = 0;
-    for (const p of mapPoints) {
-      if (p.status === 'DELAYED') delayed += 1;
-      else if (p.status === 'BLOCKED') blocked += 1;
-      else if (p.status === 'MOVING') active += 1;
-    }
-    return {
-      total: mapPoints.length,
-      delayed,
-      blocked,
-      active,
-    };
-  }, [mapPoints]);
-
   return (
     <div className={`dashboard ${dashboardStyles.dashboardRoot}`}>
       <header className="header">
@@ -66,33 +49,6 @@ export function Dashboard() {
           proxy to API :3000).
         </p>
       </header>
-
-      <div className={dashboardStyles.kpiRow} aria-label="Fleet summary">
-        <div className={dashboardStyles.kpiItem}>
-          <span className={dashboardStyles.kpiLabel}>Total ships</span>
-          <span className={dashboardStyles.kpiValue}>{fleetKpi.total}</span>
-        </div>
-        <div className={dashboardStyles.kpiItem}>
-          <span className={dashboardStyles.kpiLabel}>Active</span>
-          <span className={dashboardStyles.kpiValue}>{fleetKpi.active}</span>
-        </div>
-        <div className={dashboardStyles.kpiItem}>
-          <span className={dashboardStyles.kpiLabel}>Delayed</span>
-          <span
-            className={`${dashboardStyles.kpiValue} ${dashboardStyles.kpiValueWarn}`}
-          >
-            {fleetKpi.delayed}
-          </span>
-        </div>
-        <div className={dashboardStyles.kpiItem}>
-          <span className={dashboardStyles.kpiLabel}>Blocked</span>
-          <span
-            className={`${dashboardStyles.kpiValue} ${dashboardStyles.kpiValueAlert}`}
-          >
-            {fleetKpi.blocked}
-          </span>
-        </div>
-      </div>
 
       <div className={dashboardStyles.dashboardGrid}>
         <section
