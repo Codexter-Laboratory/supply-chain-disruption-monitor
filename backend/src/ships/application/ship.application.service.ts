@@ -115,4 +115,9 @@ export class ShipApplicationService {
     }
     return this.ships.findInBoundingBox(normalized);
   }
+
+  /** Entire fleet (KPI aggregation, exports). */
+  async listAllShipsOrdered(): Promise<readonly Ship[]> {
+    return this.ships.findAllOrderedByName();
+  }
 }

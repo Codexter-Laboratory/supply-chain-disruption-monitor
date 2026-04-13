@@ -42,4 +42,11 @@ export class PrismaShipRepository implements ShipRepositoryPort {
     });
     return rows.map(shipFromPrismaRow);
   }
+
+  async findAllOrderedByName(): Promise<readonly Ship[]> {
+    const rows = await this.prisma.ship.findMany({
+      orderBy: { name: 'asc' },
+    });
+    return rows.map(shipFromPrismaRow);
+  }
 }
