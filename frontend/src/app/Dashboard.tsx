@@ -57,12 +57,26 @@ export function Dashboard() {
 
   return (
     <div className={dashboardStyles.rootGrid}>
-      <header className={`header ${dashboardStyles.headerBand}`}>
-        <h1>Supply chain monitor</h1>
-        <p className="muted">
-          Operations view — live GraphQL subscriptions and cached queries (Vite
-          proxy to API :3000).
-        </p>
+      <header
+        className={`${dashboardStyles.headerBand} ${dashboardStyles.pageHeader}`}
+      >
+        <div className={dashboardStyles.headerLead}>
+          <h1 className={dashboardStyles.headerTitle}>
+            Global Supply Chain Monitor
+          </h1>
+          <p className={dashboardStyles.headerSubtitle}>
+            Monitoring vessel delays, cargo value, and energy flows in real time
+          </p>
+        </div>
+        <div
+          className={dashboardStyles.liveStatus}
+          role="status"
+          aria-label="Live data"
+        >
+          <span className={dashboardStyles.liveDot} aria-hidden />
+          <span className={dashboardStyles.liveLabel}>LIVE</span>
+          <span className={dashboardStyles.liveTimestamp}>Updated just now</span>
+        </div>
       </header>
 
       <section

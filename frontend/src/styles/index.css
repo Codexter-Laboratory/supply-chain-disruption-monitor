@@ -45,20 +45,6 @@ a {
   padding-bottom: clamp(28px, 3vw, 40px);
 }
 
-.header {
-  margin-bottom: 0;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #e8ecf1;
-}
-
-.header h1 {
-  margin: 0 0 0.35rem;
-  font-size: 1.5rem;
-  font-weight: 620;
-  letter-spacing: -0.025em;
-  color: #0f172a;
-}
-
 /* Shared panel chrome (used across dashboard + feature sections) */
 .dashboard-section {
   margin-bottom: 0;
