@@ -4,11 +4,14 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "postinstall": "npm run build --prefix ../shared/domain/maritime-intelligence",
+    "prebuild": "npm run build --prefix ../shared/domain/maritime-intelligence",
     "dev": "vite",
     "build": "tsc -p tsconfig.app.json --noEmit && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@supply-chain/maritime-intelligence": "file:../shared/domain/maritime-intelligence",
     "@tanstack/react-query": "^5.59.20",
     "graphql": "^16.9.0",
     "graphql-request": "^7.1.0",

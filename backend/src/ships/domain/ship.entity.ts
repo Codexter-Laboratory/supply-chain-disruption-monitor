@@ -1,16 +1,13 @@
+import type {
+  ShipCargoType,
+  ShipOperationalStatus,
+} from '@supply-chain/maritime-intelligence';
 import { Coordinates } from '../../common/domain/coordinates';
 import { Location } from '../../common/domain/location';
 import { InvalidDomainStateError } from '../../common/errors/domain.error';
 
-/** Cargo category for routing and capacity planning (domain vocabulary). */
-export type ShipCargoType = 'OIL' | 'LNG' | 'CONTAINER' | 'BULK' | 'OTHER';
-
-/** Operational state; may be driven by events module in the full system. */
-export type ShipOperationalStatus =
-  | 'MOVING'
-  | 'WAITING'
-  | 'BLOCKED'
-  | 'DELAYED';
+/** Persistence / API enums; canonical definitions live in shared maritime domain. */
+export type { ShipCargoType, ShipOperationalStatus };
 
 /** Primitives + enums for reconstitution (mappers, transitions). */
 export type ShipRestoreInput = {
