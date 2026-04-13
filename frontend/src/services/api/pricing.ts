@@ -1,6 +1,9 @@
 import type { EnergyPriceKind, EnergyPriceTrend } from '../../types/api';
-import { graphqlHttpClient } from './client';
-import { ENERGY_PRICE_TREND_QUERY } from '../../lib/graphql/pricing';
+import { getGraphqlWsClient, graphqlHttpClient } from './client';
+import {
+  ENERGY_PRICE_TREND_QUERY,
+  ENERGY_PRICE_UPDATED_SUBSCRIPTION,
+} from '../../lib/graphql/pricing';
 
 export interface EnergyPriceTrendVariables {
   kind: EnergyPriceKind;
@@ -19,4 +22,40 @@ export async function fetchEnergyPriceTrend(
     variables,
   );
   return data.energyPriceTrend;
+}
+
+export interface EnergyPriceUpdatedPayload {
+  readonly occurredAt: string;
+  readonly priceId: string;
+  readonly kind: EnergyPriceKind;
+  readonly value: string;
+}
+
+interface EnergyPriceUpdatedMessage {
+  energyPriceUpdated?: EnergyPriceUpdatedPayload;
+}
+
+export interface EnergyPriceUpdatedHandlers {
+  readonly next: (payload: EnergyPriceUpdatedPayload) => void;
+  readonly error?: (err: unknown) => void;
+  readonly complete?: () => void;
+}
+
+export function subscribeEnergyPriceUpdated(
+  handlers: EnergyPriceUpdatedHandlers,
+): () => void {
+  const client = getGraphqlWsClient();
+  return client.subscribe<EnergyPriceUpdatedMessage>(
+    { query: ENERGY_PRICE_UPDATED_SUBSCRIPTION },
+    {
+      next: (result) => {
+        const p = result.data?.energyPriceUpdated;
+        if (p) {
+          handlers.next(p);
+        }
+      },
+      error: handlers.error ?? (() => {}),
+      complete: handlers.complete ?? (() => {}),
+    },
+  );
 }

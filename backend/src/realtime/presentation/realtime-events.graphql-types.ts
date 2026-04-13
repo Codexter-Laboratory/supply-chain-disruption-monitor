@@ -1,4 +1,5 @@
 import { Field, Float, ID, ObjectType } from '@nestjs/graphql';
+import { EnergyPriceKindGql } from '../../pricing/presentation/energy-price.graphql-types';
 
 @ObjectType('ShipStatusChangedPayload')
 export class ShipStatusChangedPayloadGraphqlType {
@@ -19,6 +20,21 @@ export class ShipStatusChangedPayloadGraphqlType {
 
   @Field(() => Float)
   longitude!: number;
+}
+
+@ObjectType('EnergyPriceUpdatedPayload')
+export class EnergyPriceUpdatedPayloadGraphqlType {
+  @Field(() => Date)
+  occurredAt!: Date;
+
+  @Field(() => ID)
+  priceId!: string;
+
+  @Field(() => EnergyPriceKindGql)
+  kind!: EnergyPriceKindGql;
+
+  @Field()
+  value!: string;
 }
 
 @ObjectType('SupplyChainEventCreatedPayload')

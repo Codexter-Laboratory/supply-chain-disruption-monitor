@@ -25,6 +25,13 @@ type EnergyPriceTrend {
   simpleTrend: EnergyPriceTrendDirection!
 }
 
+type EnergyPriceUpdatedPayload {
+  occurredAt: DateTime!
+  priceId: ID!
+  kind: EnergyPriceKind!
+  value: String!
+}
+
 enum EnergyPriceTrendDirection {
   DOWN
   FLAT
@@ -113,6 +120,7 @@ type ShipStatusChangedPayload {
 }
 
 type Subscription {
+  energyPriceUpdated: EnergyPriceUpdatedPayload!
   shipStatusChanged: ShipStatusChangedPayload!
   supplyChainEventCreated: SupplyChainEventCreatedPayload!
 }

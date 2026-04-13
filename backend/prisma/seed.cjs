@@ -1,4 +1,8 @@
 const { PrismaClient, CargoType, ShipStatus, Prisma } = require('@prisma/client');
+const {
+  commodityFromShipCargoType,
+  estimateCargoVolume,
+} = require('@supply-chain/maritime-intelligence');
 
 const prisma = new PrismaClient();
 
@@ -118,6 +122,8 @@ function buildShipSeeds() {
     const n = i + 1;
     const route = ROUTES[i % ROUTES.length];
     const { latitude, longitude } = positionInCluster(route.cluster, i);
+    const cargoType = cargoRotation[i % cargoRotation.length];
+    const capNum = 8000 + i * 1375.5;
     seeds.push({
       name: `MV Seed Runner ${String(n).padStart(2, '0')}`,
       imo: String(9100000 + n),
@@ -127,8 +133,10 @@ function buildShipSeeds() {
       originCountry: route.origin,
       destinationCountry: route.destination,
       ownerCompany: OWNERS[i % OWNERS.length],
-      cargoType: cargoRotation[i % cargoRotation.length],
-      capacity: new Prisma.Decimal(String(8000 + i * 1375.5)),
+      cargoType,
+      commodity: commodityFromShipCargoType(cargoType),
+      cargoVolume: estimateCargoVolume(capNum),
+      capacity: new Prisma.Decimal(String(capNum)),
       currentStatus: statusRotation[i % statusRotation.length],
     });
   }
@@ -150,6 +158,8 @@ async function main() {
         destinationCountry: s.destinationCountry,
         ownerCompany: s.ownerCompany,
         cargoType: s.cargoType,
+        commodity: s.commodity,
+        cargoVolume: s.cargoVolume,
         capacity: s.capacity,
         currentStatus: s.currentStatus,
       },

@@ -1,6 +1,13 @@
 export type { ShipCargoType, ShipOperationalStatus } from './legacy-shipping';
 
 export {
+  CommodityType,
+  commodityFromShipCargoType,
+  estimateCargoVolume,
+  isCommodityType,
+} from './commodity';
+
+export {
   CargoType,
   DEFAULT_CARGO_BY_VESSEL,
   VesselType,
@@ -17,7 +24,7 @@ export type { CapacityUnit } from './types';
 
 export {
   classifyVessel,
-  estimateCargoVolume,
+  estimateMaritimeCapacity,
   isShipDelayed,
   toShipClassificationInput,
 } from './classification';

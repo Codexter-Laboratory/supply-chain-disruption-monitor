@@ -1,7 +1,7 @@
 import {
   CargoType,
   classifyVessel,
-  estimateCargoVolume,
+  estimateMaritimeCapacity,
   isShipDelayed,
   VesselType,
   type CargoType as CargoTypeKey,
@@ -76,7 +76,7 @@ export function computeKpiSnapshot(input: KpiComputationInput): KpiSnapshot {
 
   for (const ship of ships) {
     const classified = classifyVessel(ship);
-    const capacity = estimateCargoVolume(ship);
+    const capacity = estimateMaritimeCapacity(ship);
     const delayed = isShipDelayed(ship);
 
     vesselsByType[classified.vesselType] += 1;

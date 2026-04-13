@@ -12,3 +12,14 @@ export const ENERGY_PRICE_TREND_QUERY = `
     }
   }
 `;
+
+export const ENERGY_PRICE_UPDATED_SUBSCRIPTION = `
+  subscription EnergyPriceUpdated {
+    energyPriceUpdated {
+      occurredAt
+      priceId
+      kind
+      value
+    }
+  }
+`;

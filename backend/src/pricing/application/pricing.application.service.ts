@@ -1,4 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
+import {
+  REALTIME_PUBLISHER,
+  type RealtimePublisherPort,
+} from '../../realtime/application/realtime-publisher.port';
+import { EnergyPriceRecordedRealtimeEvent } from '../../realtime/domain/energy-price-recorded.realtime-event';
 import type { EnergyPrice, EnergyPriceKind } from '../domain/energy-price.entity';
 import type { EnergyPriceTrend, TrendDirection } from '../domain/energy-price-trend';
 import {
@@ -40,6 +45,8 @@ export class PricingApplicationService {
     private readonly prices: EnergyPriceRepositoryPort,
     @Inject(ENERGY_PRICE_QUOTE_PROVIDER)
     private readonly quotes: EnergyPriceQuoteProviderPort,
+    @Inject(REALTIME_PUBLISHER)
+    private readonly realtime: RealtimePublisherPort,
   ) {}
 
   async listRecent(
@@ -70,11 +77,19 @@ export class PricingApplicationService {
   async ingestionTick(): Promise<void> {
     const batch = await this.quotes.fetchQuotes();
     for (const q of batch) {
-      await this.prices.insert({
+      const row = await this.prices.insert({
         type: q.type,
         value: q.value,
         timestamp: q.at,
       });
+      await this.realtime.publish(
+        new EnergyPriceRecordedRealtimeEvent(
+          row.timestamp,
+          row.id,
+          row.type,
+          row.value,
+        ),
+      );
     }
   }
 }
