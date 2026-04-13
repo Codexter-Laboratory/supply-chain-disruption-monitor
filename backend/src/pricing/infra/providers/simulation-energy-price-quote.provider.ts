@@ -3,7 +3,7 @@ import { CommodityType } from '@supply-chain/maritime-intelligence';
 import type {
   EnergyPriceQuote,
   EnergyPriceQuoteProviderPort,
-} from '../application/energy-price-quote.provider.port';
+} from '../../application/energy-price-quote.provider.port';
 
 /** Deterministic simulated quotes for all commodities (simulation ticks). */
 const BASE_BY_COMMODITY: Record<CommodityType, number> = {
@@ -17,7 +17,9 @@ const BASE_BY_COMMODITY: Record<CommodityType, number> = {
 };
 
 @Injectable()
-export class MockEnergyPriceQuoteProvider implements EnergyPriceQuoteProviderPort {
+export class SimulationEnergyPriceQuoteProvider
+  implements EnergyPriceQuoteProviderPort
+{
   private tick = 0;
 
   async fetchQuotes(): Promise<readonly EnergyPriceQuote[]> {
