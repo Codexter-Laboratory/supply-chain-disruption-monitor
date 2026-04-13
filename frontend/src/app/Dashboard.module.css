@@ -151,6 +151,33 @@
   min-height: 0;
 }
 
+.energyToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.energyToolbar label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.energyCommoditySelect {
+  font-size: 0.8125rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid rgba(148, 163, 184, 0.55);
+  background: #fff;
+  color: #0f172a;
+  min-width: 10rem;
+}
+
 .newsBand {
   grid-row: 5;
   min-width: 0;

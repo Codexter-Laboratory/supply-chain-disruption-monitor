@@ -1,5 +1,9 @@
 /** Mirrors backend GraphQL enums / shapes (camelCase fields). */
 
+import type { CommodityType } from '@supply-chain/maritime-intelligence';
+
+export type { CommodityType };
+
 export type ShipCargoType = 'OIL' | 'LNG' | 'CONTAINER' | 'BULK' | 'OTHER';
 export type ShipOperationalStatus =
   | 'MOVING'
@@ -26,11 +30,9 @@ export interface ShipPage {
   limit: number;
 }
 
-export type EnergyPriceKind = 'OIL' | 'GAS';
-
 export interface EnergyPrice {
   id: string;
-  type: EnergyPriceKind;
+  type: CommodityType;
   value: string;
   timestamp: string;
 }
@@ -38,7 +40,7 @@ export interface EnergyPrice {
 export type EnergyPriceTrendDirection = 'UP' | 'DOWN' | 'FLAT';
 
 export interface EnergyPriceTrend {
-  kind: EnergyPriceKind;
+  kind: CommodityType;
   points: EnergyPrice[];
   simpleTrend: EnergyPriceTrendDirection;
 }
