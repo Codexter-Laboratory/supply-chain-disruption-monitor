@@ -6,6 +6,12 @@ import { ShipsList } from '../features/ships/components/ShipsList';
 import { useShips } from '../features/ships/hooks/useShips';
 import { EnergyTrendChart } from '../features/pricing/components/EnergyTrendChart';
 import { useEnergyPriceTrend } from '../features/pricing/hooks/useEnergyPriceTrend';
+import {
+  COMMODITY_OPTIONS,
+  DEFAULT_ENERGY_TREND_COMMODITY,
+  parseCommodityType,
+} from '../features/pricing/pricing.constants';
+import type { CommodityType } from '../types/api';
 import { NewsFeed } from '../features/news/components/NewsFeed';
 import { useRecentNews } from '../features/news/hooks/useRecentNews';
 import { KpiPanel } from '../features/kpi/components/KpiPanel';
@@ -20,6 +26,10 @@ import type { MapViewportBounds } from '../features/map/types';
 import dashboardStyles from './Dashboard.module.css';
 
 export function Dashboard() {
+  const [energyCommodity, setEnergyCommodity] = useState<CommodityType>(
+    DEFAULT_ENERGY_TREND_COMMODITY,
+  );
+
   const liveEvents = useSupplyChainEventSubscription();
   const eventRows = useMemo(
     () => liveEvents.map(mapSupplyChainEventToRow),
@@ -44,7 +54,7 @@ export function Dashboard() {
     highlightedShipIds,
   );
 
-  const trend = useEnergyPriceTrend('OIL');
+  const trend = useEnergyPriceTrend(energyCommodity);
   const news = useRecentNews();
   const kpi = useKpi();
   useKpiSubscription();
@@ -125,8 +135,29 @@ export function Dashboard() {
 
       <div className={dashboardStyles.energyEventsRow}>
         <div className={dashboardStyles.energySlot}>
+          <div className={dashboardStyles.energyToolbar}>
+            <label htmlFor="dashboard-energy-commodity">Commodity</label>
+            <select
+              id="dashboard-energy-commodity"
+              className={dashboardStyles.energyCommoditySelect}
+              value={energyCommodity}
+              onChange={(e) => {
+                const next = parseCommodityType(e.target.value);
+                if (next !== null) {
+                  setEnergyCommodity(next);
+                }
+              }}
+              aria-label="Energy price commodity"
+            >
+              {COMMODITY_OPTIONS.map((c) => (
+                <option key={c} value={c}>
+                  {c.replaceAll('_', ' ')}
+                </option>
+              ))}
+            </select>
+          </div>
           <EnergyTrendChart
-            kind={trend.data?.kind ?? 'OIL'}
+            kind={trend.data?.kind ?? energyCommodity}
             points={trend.data?.points ?? []}
             simpleTrend={trend.data?.simpleTrend ?? 'FLAT'}
             isLoading={trend.isLoading}

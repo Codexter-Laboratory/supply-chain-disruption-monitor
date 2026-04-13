@@ -1,5 +1,5 @@
 export const ENERGY_PRICE_TREND_QUERY = `
-  query EnergyPriceTrend($kind: EnergyPriceKind!, $limit: Int!) {
+  query EnergyPriceTrend($kind: CommodityType!, $limit: Int!) {
     energyPriceTrend(kind: $kind, limit: $limit) {
       kind
       simpleTrend

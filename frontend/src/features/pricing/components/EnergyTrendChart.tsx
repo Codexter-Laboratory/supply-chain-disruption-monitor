@@ -1,9 +1,13 @@
-import type { EnergyPrice, EnergyPriceTrendDirection } from '../../../types/api';
+import type {
+  CommodityType,
+  EnergyPrice,
+  EnergyPriceTrendDirection,
+} from '../../../types/api';
 import feedback from '../../../styles/feedback.module.css';
 import styles from './EnergyTrendChart.module.css';
 
 export interface EnergyTrendChartProps {
-  kind: string;
+  kind: CommodityType;
   points: EnergyPrice[];
   simpleTrend: EnergyPriceTrendDirection;
   isLoading: boolean;

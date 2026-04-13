@@ -1,4 +1,4 @@
-import type { EnergyPriceKind, EnergyPriceTrend } from '../../types/api';
+import type { CommodityType, EnergyPriceTrend } from '../../types/api';
 import { getGraphqlWsClient, graphqlHttpClient } from './client';
 import {
   ENERGY_PRICE_TREND_QUERY,
@@ -6,7 +6,7 @@ import {
 } from '../../lib/graphql/pricing';
 
 export interface EnergyPriceTrendVariables {
-  kind: EnergyPriceKind;
+  kind: CommodityType;
   limit: number;
 }
 
@@ -27,7 +27,7 @@ export async function fetchEnergyPriceTrend(
 export interface EnergyPriceUpdatedPayload {
   readonly occurredAt: string;
   readonly priceId: string;
-  readonly kind: EnergyPriceKind;
+  readonly kind: CommodityType;
   readonly value: string;
 }
 

@@ -1,16 +1,16 @@
 import { useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import type { EnergyPriceKind } from '../../../types/api';
+import type { CommodityType } from '../../../types/api';
 import {
   fetchEnergyPriceTrend,
   subscribeEnergyPriceUpdated,
 } from '../../../services/api/pricing';
+import { DEFAULT_ENERGY_TREND_COMMODITY } from '../pricing.constants';
 
-const DEFAULT_KIND: EnergyPriceKind = 'OIL';
 const POINT_LIMIT = 32;
 
 /** WebSocket: refetch trend when server records a new price for this kind. */
-export function useEnergyPriceTrendSubscription(kind: EnergyPriceKind): void {
+export function useEnergyPriceTrendSubscription(kind: CommodityType): void {
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -33,7 +33,9 @@ export function useEnergyPriceTrendSubscription(kind: EnergyPriceKind): void {
 /** Same as {@link useEnergyPriceTrendSubscription} (naming used in ops dashboards). */
 export const usePricingSubscription = useEnergyPriceTrendSubscription;
 
-export function useEnergyPriceTrend(kind: EnergyPriceKind = DEFAULT_KIND) {
+export function useEnergyPriceTrend(
+  kind: CommodityType = DEFAULT_ENERGY_TREND_COMMODITY,
+) {
   useEnergyPriceTrendSubscription(kind);
 
   return useQuery({
