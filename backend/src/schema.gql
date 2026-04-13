@@ -2,6 +2,41 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type CargoValueByTypeGql {
+  CONTAINER_GOODS: Float!
+  CRUDE_OIL: Float!
+  DRY_BULK: Float!
+  LNG: Float!
+  LPG: Float!
+  PETROCHEMICALS: Float!
+  REFINED_PRODUCTS: Float!
+}
+
+type CargoVolumeByTypeGql {
+  CONTAINER_GOODS: Float!
+  CRUDE_OIL: Float!
+  DRY_BULK: Float!
+  LNG: Float!
+  LPG: Float!
+  PETROCHEMICALS: Float!
+  REFINED_PRODUCTS: Float!
+}
+
+enum CommodityType {
+  BULK
+  CONTAINER
+  LNG
+  LPG
+  OIL
+  PETROCHEMICALS
+  REFINED_PRODUCTS
+}
+
+type CommodityValueEntry {
+  commodity: CommodityType!
+  value: Float!
+}
+
 """
 A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
 """
@@ -25,17 +60,45 @@ type EnergyPriceTrend {
   simpleTrend: EnergyPriceTrendDirection!
 }
 
-type EnergyPriceUpdatedPayload {
-  occurredAt: DateTime!
-  priceId: ID!
-  kind: EnergyPriceKind!
-  value: String!
-}
-
 enum EnergyPriceTrendDirection {
   DOWN
   FLAT
   UP
+}
+
+type EnergyPriceUpdatedPayload {
+  kind: EnergyPriceKind!
+  occurredAt: DateTime!
+  priceId: ID!
+  value: String!
+}
+
+type FinancialKpisGraphqlType {
+  estimatedLngValue: Float!
+  estimatedOilValue: Float!
+  totalCargoValue: Float!
+  valueByCargoType: CargoValueByTypeGql!
+}
+
+type KpiSnapshot {
+  computedAt: String!
+  delayedCargoValueByCommodity: [CommodityValueEntry!]!
+  delayedVolumeByCommodity: [CommodityValueEntry!]!
+  financial: FinancialKpisGraphqlType!
+  maritime: MaritimeKpisGraphqlType!
+  totalCargoValueByCommodity: [CommodityValueEntry!]!
+}
+
+type MaritimeKpisGraphqlType {
+  averageDelayTimeHours: Float!
+  delayedVessels: Int!
+  delayedVesselsByType: VesselsByTypeCountsGql!
+  totalDeadweightTonnage: Float!
+  totalDelayHours: Float!
+  totalLNGVolume: Float!
+  totalVessels: Int!
+  vesselsByType: VesselsByTypeCountsGql!
+  volumeByCargoType: CargoVolumeByTypeGql!
 }
 
 type NewsItem {
@@ -49,6 +112,7 @@ type NewsItem {
 
 type Query {
   energyPriceTrend(kind: EnergyPriceKind!, limit: Int! = 24): EnergyPriceTrend!
+  getKpiSnapshot: KpiSnapshot!
   health: String!
   recentEnergyPrices(limit: Int! = 50, type: EnergyPriceKind): [EnergyPrice!]!
   recentNews(limit: Int! = 30): [NewsItem!]!
@@ -121,6 +185,7 @@ type ShipStatusChangedPayload {
 
 type Subscription {
   energyPriceUpdated: EnergyPriceUpdatedPayload!
+  kpiUpdated: KpiSnapshot!
   shipStatusChanged: ShipStatusChangedPayload!
   supplyChainEventCreated: SupplyChainEventCreatedPayload!
 }
@@ -152,4 +217,14 @@ enum SupplyChainEventKind {
   DELAY
   INCIDENT
   REROUTE
+}
+
+type VesselsByTypeCountsGql {
+  BULK: Int!
+  CHEMICAL_TANKER: Int!
+  CONTAINER: Int!
+  CRUDE_TANKER: Int!
+  LNG_CARRIER: Int!
+  LPG_CARRIER: Int!
+  PRODUCT_TANKER: Int!
 }

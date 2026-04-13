@@ -1,4 +1,9 @@
-import { Field, Float, Int, ObjectType } from '@nestjs/graphql';
+import { CommodityType } from '@supply-chain/maritime-intelligence';
+import { Field, Float, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
+
+registerEnumType(CommodityType, {
+  name: 'CommodityType',
+});
 
 @ObjectType()
 export class VesselsByTypeCountsGql {
@@ -54,9 +59,24 @@ export class FinancialKpisGraphqlType {
   @Field(() => CargoValueByTypeGql) valueByCargoType!: CargoValueByTypeGql;
 }
 
+@ObjectType()
+export class CommodityValueEntry {
+  @Field(() => CommodityType)
+  commodity!: CommodityType;
+
+  @Field(() => Float)
+  value!: number;
+}
+
 @ObjectType('KpiSnapshot')
 export class KpiSnapshotGraphqlType {
   @Field(() => MaritimeKpisGraphqlType) maritime!: MaritimeKpisGraphqlType;
   @Field(() => FinancialKpisGraphqlType) financial!: FinancialKpisGraphqlType;
   @Field() computedAt!: string;
+  @Field(() => [CommodityValueEntry])
+  totalCargoValueByCommodity!: CommodityValueEntry[];
+  @Field(() => [CommodityValueEntry])
+  delayedCargoValueByCommodity!: CommodityValueEntry[];
+  @Field(() => [CommodityValueEntry])
+  delayedVolumeByCommodity!: CommodityValueEntry[];
 }
