@@ -1,4 +1,8 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import {
+  KPI_REFRESH_SCHEDULER,
+  type KpiRefreshSchedulerPort,
+} from '../../kpi/application/kpi-refresh.port';
 import { Coordinates } from '../../common/domain/coordinates';
 import {
   REALTIME_PUBLISHER,
@@ -64,6 +68,8 @@ export class EventsApplicationService {
     @Inject(SHIP_REPOSITORY) private readonly ships: ShipRepositoryPort,
     @Inject(SHIP_WRITE_PORT) private readonly shipWrite: ShipWritePort,
     @Inject(REALTIME_PUBLISHER) private readonly realtime: RealtimePublisherPort,
+    @Inject(KPI_REFRESH_SCHEDULER)
+    private readonly kpiRefresh: KpiRefreshSchedulerPort,
   ) {}
 
   /**
@@ -172,6 +178,8 @@ export class EventsApplicationService {
         nudged.longitude,
       ),
     );
+
+    this.kpiRefresh.scheduleRecompute();
   }
 
   async findSupplyChainEventById(id: string): Promise<SupplyChainEvent | null> {

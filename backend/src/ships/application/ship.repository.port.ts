@@ -10,4 +10,6 @@ export interface ShipRepositoryPort {
   findPage(offset: number, limit: number): Promise<ShipPage>;
   /** Axis-aligned bounds in degrees; antimeridian not handled. */
   findInBoundingBox(box: ShipGeoBoundingBox): Promise<readonly Ship[]>;
+  /** Full fleet ordered by name (KPI / analytics; bounded by DB size). */
+  findAllOrderedByName(): Promise<readonly Ship[]>;
 }
