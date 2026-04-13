@@ -2,7 +2,7 @@ import { getGraphqlWsClient, graphqlHttpClient } from './client';
 import {
   GET_KPI_SNAPSHOT_QUERY,
   KPI_UPDATED_SUBSCRIPTION,
-} from './graphql/kpi';
+} from '../../lib/graphql/kpi';
 
 export interface KpiMaritimeSlice {
   readonly totalVessels: number;
@@ -30,25 +30,21 @@ interface KpiUpdatedMessage {
   kpiUpdated?: KpiSnapshot;
 }
 
-export async function fetchKpiSnapshot(): Promise<KpiSnapshot> {
+export async function getKpiSnapshot(): Promise<KpiSnapshot> {
   const data = await graphqlHttpClient.request<GetKpiSnapshotResponse>(
     GET_KPI_SNAPSHOT_QUERY,
   );
   return data.getKpiSnapshot;
 }
 
-export interface KpiSubscriptionHandlers {
+export interface KpiUpdatedHandlers {
   readonly next: (snapshot: KpiSnapshot) => void;
   readonly error?: (err: unknown) => void;
   readonly complete?: () => void;
 }
 
-/**
- * WebSocket subscription; returns dispose. Uses shared WS client from `./client`.
- */
-export function subscribeToKpiUpdates(
-  handlers: KpiSubscriptionHandlers,
-): () => void {
+/** WebSocket subscription; returns dispose. */
+export function subscribeKpiUpdated(handlers: KpiUpdatedHandlers): () => void {
   const client = getGraphqlWsClient();
   return client.subscribe<KpiUpdatedMessage>(
     { query: KPI_UPDATED_SUBSCRIPTION },

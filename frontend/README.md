@@ -18,11 +18,13 @@ Start the Nest API on port **3000** first. For live ticks and data volume, set `
 
 ## Architecture
 
-- `src/services/api/` — GraphQL client, operation strings, typed fetch helpers (no React).
-- `src/features/*/hooks/` — queries, subscriptions, cache updates.
+- `src/lib/graphql/` — GraphQL document strings (queries/subscriptions).
+- `src/services/api/` — HTTP/WS clients and typed API functions only (no React, no documents).
+- `src/features/*/hooks/` — React Query, subscriptions, cache updates.
 - `src/features/*/components/` — presentational only (props in, JSX out).
+- `src/features/*/mappers/` — snapshot → view models (formatting, display fields).
 - `src/app/` — shell, `QueryProvider`, `Dashboard` composition.
 
 ## Subscriptions
 
-`useShipStatusSubscription` patches cached `ships` pages in place when `shipStatusChanged` fires (no full list refetch). `useSupplyChainEventSubscription` maintains a rolling feed for the sidebar.
+`useShipStatusSubscription` patches cached `ships` pages in place when `shipStatusChanged` fires (no full list refetch). `features/events/hooks/useSupplyChainEventSubscription` maintains a rolling feed for the sidebar; `useKpiSubscription` writes KPI snapshots into the React Query cache.

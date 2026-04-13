@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ShipOperationalStatus } from '../../../types/api';
-import { getGraphqlWsClient } from '../../../services/api/client';
-import { SHIP_STATUS_CHANGED_SUBSCRIPTION } from '../../../services/api/graphql/ships';
+import { subscribeShipStatusChanged } from '../../../services/api/ships.api';
 import { queryClient } from '../../../app/queryClient';
 import type { ShipPage } from '../../../types/api';
 
@@ -25,61 +24,49 @@ export function useShipStatusSubscription(): { flashShipId: string | null } {
   const flashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    const client = getGraphqlWsClient();
-    const dispose = client.subscribe(
-      { query: SHIP_STATUS_CHANGED_SUBSCRIPTION },
-      {
-        next: (result) => {
-          const payload = result.data?.shipStatusChanged as
-            | {
-                shipId: string;
-                newStatus: string;
-                latitude: number;
-                longitude: number;
-              }
-            | undefined;
-          if (!payload || !isShipStatus(payload.newStatus)) {
-            return;
-          }
-          if (
-            !Number.isFinite(payload.latitude) ||
-            !Number.isFinite(payload.longitude)
-          ) {
-            return;
-          }
-          const newStatus = payload.newStatus;
-          queryClient.setQueriesData<ShipPage>(
-            { queryKey: ['ships'] },
-            (old) => {
-              if (!old) return old;
-              const nextItems = old.items.map((ship) =>
-                ship.id === payload.shipId
-                  ? {
-                      ...ship,
-                      currentStatus: newStatus,
-                      latitude: payload.latitude,
-                      longitude: payload.longitude,
-                    }
-                  : ship,
-              );
-              return { ...old, items: nextItems };
-            },
-          );
-          if (flashTimerRef.current) {
-            clearTimeout(flashTimerRef.current);
-          }
-          setFlashShipId(payload.shipId);
-          flashTimerRef.current = setTimeout(() => {
-            setFlashShipId(null);
-            flashTimerRef.current = null;
-          }, FLASH_MS);
-        },
-        error: () => {
-          /* subscription transport errors are non-fatal for dashboard */
-        },
-        complete: () => {},
+    const dispose = subscribeShipStatusChanged({
+      next: (payload) => {
+        if (!isShipStatus(payload.newStatus)) {
+          return;
+        }
+        if (
+          !Number.isFinite(payload.latitude) ||
+          !Number.isFinite(payload.longitude)
+        ) {
+          return;
+        }
+        const newStatus = payload.newStatus;
+        queryClient.setQueriesData<ShipPage>(
+          { queryKey: ['ships'] },
+          (old) => {
+            if (!old) return old;
+            const nextItems = old.items.map((ship) =>
+              ship.id === payload.shipId
+                ? {
+                    ...ship,
+                    currentStatus: newStatus,
+                    latitude: payload.latitude,
+                    longitude: payload.longitude,
+                  }
+                : ship,
+            );
+            return { ...old, items: nextItems };
+          },
+        );
+        if (flashTimerRef.current) {
+          clearTimeout(flashTimerRef.current);
+        }
+        setFlashShipId(payload.shipId);
+        flashTimerRef.current = setTimeout(() => {
+          setFlashShipId(null);
+          flashTimerRef.current = null;
+        }, FLASH_MS);
       },
-    );
+      error: () => {
+        /* subscription transport errors are non-fatal for dashboard */
+      },
+      complete: () => {},
+    });
     return () => {
       dispose();
       if (flashTimerRef.current) {

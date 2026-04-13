@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import type { Ship } from '../../../types/api';
-import { fetchShipsInView } from '../../../services/api/ships';
+import { getShipsInView } from '../../../services/api/ships.api';
 import type { MapViewportBounds, ShipMapPoint } from '../types';
 import { useDebouncedValue } from './useDebouncedValue';
 
@@ -48,7 +48,7 @@ export function useShipsInView(rawBounds: MapViewportBounds | null) {
       if (debouncedBounds == null) {
         return Promise.resolve([]);
       }
-      return fetchShipsInView({
+      return getShipsInView({
         minLat: debouncedBounds.south,
         maxLat: debouncedBounds.north,
         minLng: debouncedBounds.west,

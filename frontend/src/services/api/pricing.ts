@@ -1,6 +1,6 @@
 import type { EnergyPriceKind, EnergyPriceTrend } from '../../types/api';
 import { graphqlHttpClient } from './client';
-import { ENERGY_PRICE_TREND_QUERY } from './graphql/pricing';
+import { ENERGY_PRICE_TREND_QUERY } from '../../lib/graphql/pricing';
 
 export interface EnergyPriceTrendVariables {
   kind: EnergyPriceKind;

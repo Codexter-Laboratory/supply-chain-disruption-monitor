@@ -50,7 +50,7 @@ export function EnergyTrendChart({
 }: EnergyTrendChartProps) {
   const nums = points.map((p) => Number(p.value)).filter((n) => Number.isFinite(n));
   const w = 280;
-  const h = 100;
+  const h = 108;
   const d = sparklinePath(nums, w, h);
   const lastPoint = points.length > 0 ? points[points.length - 1] : undefined;
   const currentValue = lastPoint?.value;
@@ -62,78 +62,69 @@ export function EnergyTrendChart({
       : null;
 
   return (
-    <section className="dashboard-section panel panel--stacked">
+    <section className="dashboard-section panel panel--stacked panel--fixedScrollLayout">
       <div className="panel-head">
         <h2 className="section-title">Energy Prices</h2>
         <span className="muted">{kind}</span>
       </div>
 
-      {error ? (
-        <p className={feedback.stateMessageError} role="alert">
-          {error.message}
-        </p>
-      ) : null}
+      <div className={`panel-body ${styles.chartBody}`}>
+        {error ? (
+          <p className={feedback.stateMessageError} role="alert">
+            {error.message}
+          </p>
+        ) : null}
 
-      {isLoading ? (
-        <div className={feedback.stateMessageLoading}>
-          <span className={feedback.spinner} aria-hidden />
-          <span>Loading price trend…</span>
-        </div>
-      ) : (
-        <>
-          {currentValue !== undefined ? (
-            <div className={styles.priceCurrent}>
-              <span className={styles.priceCurrentLabel}>Current</span>
-              <span className={`${styles.priceCurrentValue} mono`}>
-                {currentValue}
-              </span>
-              <span
-                className={`${styles.trend} ${TREND_CLASS[simpleTrend]} ${styles.trendInline}`}
-              >
-                {simpleTrend}
-              </span>
-              {pct !== null ? (
-                <span className={`${styles.pricePct} muted`}>
-                  ({pct} vs window start)
+        {isLoading ? (
+          <div className={feedback.stateMessageLoading}>
+            <span className={feedback.spinner} aria-hidden />
+            <span>Loading price trend…</span>
+          </div>
+        ) : (
+          <>
+            {currentValue !== undefined ? (
+              <div className={styles.priceCurrent}>
+                <span className={styles.priceCurrentLabel}>Current</span>
+                <span className={`${styles.priceCurrentValue} mono`}>
+                  {currentValue}
                 </span>
-              ) : null}
-            </div>
-          ) : null}
-
-          {nums.length < 2 && !error ? (
-            <p className={feedback.stateMessageEmpty}>
-              No data available yet. Run simulation / pricing ingestion to build
-              history.
-            </p>
-          ) : null}
-
-          {nums.length >= 2 ? (
-            <svg
-              className={styles.sparkline}
-              viewBox={`0 0 ${w} ${h}`}
-              width="100%"
-              height={h}
-              role="img"
-              aria-label={`${kind} price trend`}
-            >
-              <path d={d} fill="none" stroke="currentColor" strokeWidth="1.5" />
-            </svg>
-          ) : null}
-
-          {nums.length >= 2 ? (
-            <ul className={styles.priceFoot}>
-              {points.slice(-3).map((p) => (
-                <li key={p.id}>
-                  <span className="mono">{p.value}</span>
-                  <span className="muted">
-                    {new Date(p.timestamp).toLocaleString()}
+                {pct !== null ? (
+                  <span
+                    className={`${styles.pricePct} ${TREND_CLASS[simpleTrend]}`}
+                  >
+                    {pct}
                   </span>
-                </li>
-              ))}
-            </ul>
-          ) : null}
-        </>
-      )}
+                ) : null}
+              </div>
+            ) : null}
+
+            {nums.length < 2 && !error ? (
+              <p className={feedback.stateMessageEmpty}>
+                No data available yet. Run simulation / pricing ingestion to
+                build history.
+              </p>
+            ) : null}
+
+            {nums.length >= 2 ? (
+              <svg
+                className={styles.sparkline}
+                viewBox={`0 0 ${w} ${h}`}
+                width="100%"
+                height={h}
+                role="img"
+                aria-label={`${kind} price trend`}
+              >
+                <path
+                  d={d}
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                />
+              </svg>
+            ) : null}
+          </>
+        )}
+      </div>
     </section>
   );
 }
