@@ -34,11 +34,23 @@ export class SupplyChainSimulationOrchestrator {
   private async executeTick(): Promise<void> {
     try {
       await this.events.simulationTick();
+    } catch (err) {
+      this.logger.warn(
+        `Events simulation tick failed: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
+    try {
       await this.pricing.ingestionTick();
+    } catch (err) {
+      this.logger.warn(
+        `Pricing ingestion tick failed: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
+    try {
       await this.news.ingestionTick();
     } catch (err) {
       this.logger.warn(
-        `Simulation tick failed: ${err instanceof Error ? err.message : String(err)}`,
+        `News ingestion tick failed: ${err instanceof Error ? err.message : String(err)}`,
       );
     }
   }

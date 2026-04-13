@@ -1,6 +1,9 @@
-import type {
-  ShipCargoType,
-  ShipOperationalStatus,
+import {
+  CommodityType,
+  estimateCargoVolume,
+  isCommodityType,
+  type ShipCargoType,
+  type ShipOperationalStatus,
 } from '@supply-chain/maritime-intelligence';
 import { Coordinates } from '../../common/domain/coordinates';
 import { Location } from '../../common/domain/location';
@@ -8,6 +11,7 @@ import { InvalidDomainStateError } from '../../common/errors/domain.error';
 
 /** Persistence / API enums; canonical definitions live in shared maritime domain. */
 export type { ShipCargoType, ShipOperationalStatus };
+export { CommodityType };
 
 /** Primitives + enums for reconstitution (mappers, transitions). */
 export type ShipRestoreInput = {
@@ -16,6 +20,9 @@ export type ShipRestoreInput = {
   readonly imo: string;
   readonly country: string;
   readonly cargoType: ShipCargoType;
+  readonly commodity: CommodityType;
+  /** When omitted, derived from {@link capacity} via {@link estimateCargoVolume}. */
+  readonly cargoVolume?: number;
   readonly capacity: string;
   readonly currentStatus: ShipOperationalStatus;
   readonly latitude: number;
@@ -31,6 +38,8 @@ type ShipInternalProps = {
   readonly imo: string;
   readonly country: string;
   readonly cargoType: ShipCargoType;
+  readonly commodity: CommodityType;
+  readonly cargoVolume: number;
   readonly capacity: string;
   readonly currentStatus: ShipOperationalStatus;
   readonly position: Coordinates;
@@ -75,6 +84,43 @@ function assertNonEmpty(label: string, value: string): string {
   return t;
 }
 
+function assertCommodity(value: string): CommodityType {
+  if (!isCommodityType(value)) {
+    throw new InvalidDomainStateError(`Unknown commodity: ${value}`);
+  }
+  return value;
+}
+
+function assertCargoVolume(value: number): number {
+  if (!Number.isFinite(value) || value < 0) {
+    throw new InvalidDomainStateError(
+      'cargoVolume must be a non-negative finite number',
+    );
+  }
+  return value;
+}
+
+function resolveCargoVolume(
+  rawVolume: number | undefined,
+  capacityDecimal: string,
+): number {
+  const capacityNum = Number(capacityDecimal);
+  if (!Number.isFinite(capacityNum) || capacityNum < 0) {
+    throw new InvalidDomainStateError(
+      'capacity must parse to a non-negative finite number',
+    );
+  }
+  if (rawVolume === undefined) {
+    try {
+      return estimateCargoVolume(capacityNum);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      throw new InvalidDomainStateError(msg);
+    }
+  }
+  return assertCargoVolume(rawVolume);
+}
+
 /**
  * Ship aggregate (read-oriented in this module).
  * Reconstituted from persistence via {@link Ship.restore}; not constructed ad hoc outside tests.
@@ -104,6 +150,8 @@ export class Ship {
     if (!CARGO_TYPES.includes(raw.cargoType)) {
       throw new InvalidDomainStateError(`Unknown cargo type: ${raw.cargoType}`);
     }
+    const commodity = assertCommodity(String(raw.commodity));
+    const cargoVolume = resolveCargoVolume(raw.cargoVolume, capacity);
     const ownerCompany = assertNonEmpty('Ship ownerCompany', raw.ownerCompany);
     const position = Coordinates.restore(raw.latitude, raw.longitude);
     const origin = Location.ofCountry(raw.originCountry);
@@ -114,6 +162,8 @@ export class Ship {
       imo,
       country,
       cargoType: raw.cargoType,
+      commodity,
+      cargoVolume,
       capacity,
       currentStatus: raw.currentStatus,
       position,
@@ -138,6 +188,15 @@ export class Ship {
   get cargoType(): ShipCargoType {
     return this.props.cargoType;
   }
+
+  get commodity(): CommodityType {
+    return this.props.commodity;
+  }
+
+  get cargoVolume(): number {
+    return this.props.cargoVolume;
+  }
+
   get capacity(): string {
     return this.props.capacity;
   }
@@ -155,6 +214,16 @@ export class Ship {
   }
 
   get destinationCountry(): string {
+    return this.props.destination.country;
+  }
+
+  /** Route origin label (same persistence as {@link originCountry}). */
+  get origin(): string {
+    return this.props.origin.country;
+  }
+
+  /** Route destination label (same persistence as {@link destinationCountry}). */
+  get destination(): string {
     return this.props.destination.country;
   }
 
@@ -186,6 +255,8 @@ export class Ship {
       imo: this.props.imo,
       country: this.props.country,
       cargoType: this.props.cargoType,
+      commodity: this.props.commodity,
+      cargoVolume: this.props.cargoVolume,
       capacity: this.props.capacity,
       currentStatus: next,
       latitude: this.props.position.latitude,
@@ -203,6 +274,8 @@ export class Ship {
       imo: this.props.imo,
       country: this.props.country,
       cargoType: this.props.cargoType,
+      commodity: this.props.commodity,
+      cargoVolume: this.props.cargoVolume,
       capacity: this.props.capacity,
       currentStatus: this.props.currentStatus,
       latitude: next.latitude,

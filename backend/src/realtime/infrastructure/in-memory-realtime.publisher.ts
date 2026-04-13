@@ -3,6 +3,7 @@ import { PubSub } from 'graphql-subscriptions';
 import { PUB_SUB } from '../application/pub-sub.token';
 import { RealtimePublisherPort } from '../application/realtime-publisher.port';
 import {
+  ENERGY_PRICE_UPDATED_TOPIC,
   SHIP_STATUS_CHANGED_TOPIC,
   SUPPLY_CHAIN_EVENT_CREATED_TOPIC,
 } from '../application/realtime-topics';
@@ -47,6 +48,18 @@ export class InMemoryRealtimePublisher implements RealtimePublisherPort {
           latitude: payload.latitude,
           longitude: payload.longitude,
           region: payload.region,
+        },
+      });
+      return;
+    }
+
+    if (payload.discriminator === 'energy_price.recorded') {
+      await this.pubSub.publish(ENERGY_PRICE_UPDATED_TOPIC, {
+        energyPriceUpdated: {
+          occurredAt: payload.occurredAt,
+          priceId: payload.priceId,
+          kind: payload.type,
+          value: payload.value,
         },
       });
       return;

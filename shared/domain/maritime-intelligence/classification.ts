@@ -112,7 +112,8 @@ export function classifyVessel(
   return classifyFromInput(toShipClassificationInput(source));
 }
 
-export function estimateCargoVolume(
+/** Estimated capacity (value + unit) from a ship-like classification source. */
+export function estimateMaritimeCapacity(
   source: ShipClassificationSource,
   vesselTypeOverride?: VesselType,
 ): EstimatedCapacity {

@@ -18,6 +18,16 @@ enum CargoType {
   OTHER
 }
 
+enum CommodityType {
+  OIL
+  LNG
+  LPG
+  REFINED_PRODUCTS
+  PETROCHEMICALS
+  CONTAINER
+  BULK
+}
+
 enum ShipStatus {
   MOVING
   WAITING
@@ -38,17 +48,19 @@ enum EnergyPriceType {
 }
 
 model Ship {
-  id                 String     @id @default(cuid())
+  id                 String        @id @default(cuid())
   name               String
-  imo                String     @unique
+  imo                String        @unique
   country            String
-  latitude           Float      @default(0)
-  longitude          Float      @default(0)
-  originCountry      String     @default("Unknown")
-  destinationCountry String     @default("Unknown")
-  ownerCompany       String     @default("Unknown")
+  latitude           Float         @default(0)
+  longitude          Float         @default(0)
+  originCountry      String        @default("Unknown")
+  destinationCountry String        @default("Unknown")
+  ownerCompany       String        @default("Unknown")
   cargoType          CargoType
-  capacity           Decimal    @db.Decimal(20, 2)
+  commodity          CommodityType @default(OIL)
+  cargoVolume        Float         @default(0)
+  capacity           Decimal       @db.Decimal(20, 2)
   currentStatus      ShipStatus
   createdAt          DateTime   @default(now())
   updatedAt          DateTime   @updatedAt

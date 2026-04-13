@@ -18,7 +18,7 @@ export interface MaritimeKpis {
   /** Sum of delay hours for delayed ships with valid `delayStartTime` (invalid timestamps skipped). */
   readonly totalDelayHours: number;
   readonly averageDelayTimeHours: number;
-  /** Capacity value from {@link estimateCargoVolume} aggregated by domain cargo (mixed units by bucket). */
+  /** Capacity value from {@link estimateMaritimeCapacity} aggregated by domain cargo (mixed units by bucket). */
   readonly volumeByCargoType: Record<CargoType, number>;
 }
 
