@@ -1,6 +1,6 @@
 import type { NewsItem } from '../../types/api';
 import { graphqlHttpClient } from './client';
-import { RECENT_NEWS_QUERY } from './graphql/news';
+import { RECENT_NEWS_QUERY } from '../../lib/graphql/news';
 
 export interface RecentNewsVariables {
   limit: number;

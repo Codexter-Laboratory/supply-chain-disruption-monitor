@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ShipOperationalStatus } from '../../../types/api';
-import { getGraphqlWsClient } from '../../../services/api/client';
-import { SHIP_STATUS_CHANGED_SUBSCRIPTION } from '../../../services/api/graphql/ships';
+import { subscribeShipStatusChanged } from '../../../services/api/ships.api';
 import type { ShipMapPoint } from '../types';
 
 const HIGHLIGHT_MS = 2000;
@@ -90,55 +89,39 @@ export function useShipRealtimeMap(
   }, [dataUpdatedAt, initialPoints, addHighlight]);
 
   useEffect(() => {
-    const client = getGraphqlWsClient();
-    const dispose = client.subscribe(
-      { query: SHIP_STATUS_CHANGED_SUBSCRIPTION },
-      {
-        next: (result) => {
-          const payload = result.data?.shipStatusChanged as
-            | {
-                shipId: string;
-                newStatus: string;
-                latitude: number;
-                longitude: number;
-              }
-            | undefined;
-          if (!payload || !isShipStatus(payload.newStatus)) return;
-          if (
-            !Number.isFinite(payload.latitude) ||
-            !Number.isFinite(payload.longitude)
-          ) {
-            return;
+    return subscribeShipStatusChanged({
+      next: (payload) => {
+        if (!isShipStatus(payload.newStatus)) return;
+        if (
+          !Number.isFinite(payload.latitude) ||
+          !Number.isFinite(payload.longitude)
+        ) {
+          return;
+        }
+        const shipId = payload.shipId;
+        const newPoint: ShipMapPoint = {
+          id: shipId,
+          status: payload.newStatus,
+          latitude: payload.latitude,
+          longitude: payload.longitude,
+        };
+
+        setPoints((prev) => {
+          const i = prev.findIndex((p) => p.id === shipId);
+          if (i === -1) return prev;
+          const cur = prev[i]!;
+          if (shipPointChanged(cur, newPoint)) {
+            queueMicrotask(() => addHighlight(shipId));
           }
-          const shipId = payload.shipId;
-          const newPoint: ShipMapPoint = {
-            id: shipId,
-            status: payload.newStatus,
-            latitude: payload.latitude,
-            longitude: payload.longitude,
-          };
-
-          setPoints((prev) => {
-            const i = prev.findIndex((p) => p.id === shipId);
-            if (i === -1) return prev;
-            const cur = prev[i]!;
-            if (shipPointChanged(cur, newPoint)) {
-              queueMicrotask(() => addHighlight(shipId));
-            }
-            const next = [...prev];
-            next[i] = newPoint;
-            prevByIdRef.current.set(shipId, newPoint);
-            return next;
-          });
-        },
-        error: () => {},
-        complete: () => {},
+          const next = [...prev];
+          next[i] = newPoint;
+          prevByIdRef.current.set(shipId, newPoint);
+          return next;
+        });
       },
-    );
-
-    return () => {
-      dispose();
-    };
+      error: () => {},
+      complete: () => {},
+    });
   }, [addHighlight]);
 
   return { points, highlightedShipIds };

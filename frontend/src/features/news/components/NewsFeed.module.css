@@ -1,23 +1,19 @@
-.list {
+.newsList {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-.list li {
-  padding: 0.7rem 0;
-  border-bottom: 1px solid #f0f2f5;
+.newsList li {
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
 }
 
-.list li:first-child {
-  padding-top: 0.2rem;
-}
-
-.list li:last-child {
+.newsList li:last-child {
   border-bottom: none;
 }
 
-.list a {
+.newsList a {
   font-weight: 600;
   text-decoration: none;
   font-size: 0.875rem;
@@ -25,7 +21,7 @@
   letter-spacing: -0.01em;
 }
 
-.list a:hover {
+.newsList a:hover {
   color: #2563eb;
   text-decoration: none;
 }

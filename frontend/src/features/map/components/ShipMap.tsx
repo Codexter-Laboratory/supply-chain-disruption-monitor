@@ -100,7 +100,6 @@ export const ShipMap = memo(function ShipMap({
         mapboxAccessToken={mapboxToken}
         initialViewState={initialViewState}
         mapStyle="mapbox://styles/mapbox/dark-v11"
-        style={{ width: '100%', height: '100%' }}
         onLoad={(e) => emitBounds(e.target)}
         onMoveEnd={(e) => emitBounds(e.target)}
       >

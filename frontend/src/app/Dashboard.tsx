@@ -1,7 +1,8 @@
-import { useCallback, useState } from 'react';
-import { LiveSupplyChainPanel } from '../features/ships/components/LiveSupplyChainPanel';
+import { useCallback, useMemo, useState } from 'react';
+import { LiveSupplyChainPanel } from '../features/events/components/LiveSupplyChainPanel';
+import { useSupplyChainEventSubscription } from '../features/events/hooks/useSupplyChainEventSubscription';
+import { mapSupplyChainEventToRow } from '../features/events/mappers/supply-chain-event.mapper';
 import { ShipsList } from '../features/ships/components/ShipsList';
-import { useSupplyChainEventSubscription } from '../features/ships/hooks/useSupplyChainEventSubscription';
 import { useShips } from '../features/ships/hooks/useShips';
 import { EnergyTrendChart } from '../features/pricing/components/EnergyTrendChart';
 import { useEnergyPriceTrend } from '../features/pricing/hooks/useEnergyPriceTrend';
@@ -9,6 +10,8 @@ import { NewsFeed } from '../features/news/components/NewsFeed';
 import { useRecentNews } from '../features/news/hooks/useRecentNews';
 import { KpiPanel } from '../features/kpi/components/KpiPanel';
 import { useKpi } from '../features/kpi/hooks/useKpi';
+import { useKpiSubscription } from '../features/kpi/hooks/useKpiSubscription';
+import { mapKpiSnapshotToPanelView } from '../features/kpi/mappers/kpi.mapper';
 import { ShipMap } from '../features/map/components/ShipMap';
 import { useShipMapFeatureCollection } from '../features/map/hooks/useShipMapFeatureCollection';
 import { useShipRealtimeMap } from '../features/map/hooks/useShipRealtimeMap';
@@ -17,7 +20,11 @@ import type { MapViewportBounds } from '../features/map/types';
 import dashboardStyles from './Dashboard.module.css';
 
 export function Dashboard() {
-  const { events } = useSupplyChainEventSubscription();
+  const liveEvents = useSupplyChainEventSubscription();
+  const eventRows = useMemo(
+    () => liveEvents.map(mapSupplyChainEventToRow),
+    [liveEvents],
+  );
   const shipsPage = useShips();
 
   const [viewportBounds, setViewportBounds] =
@@ -40,6 +47,11 @@ export function Dashboard() {
   const trend = useEnergyPriceTrend('OIL');
   const news = useRecentNews();
   const kpi = useKpi();
+  useKpiSubscription();
+  const kpiView = useMemo(
+    () => (kpi.data ? mapKpiSnapshotToPanelView(kpi.data) : null),
+    [kpi.data],
+  );
 
   const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
@@ -53,33 +65,52 @@ export function Dashboard() {
         </p>
       </header>
 
-      <div className={dashboardStyles.mapOilRow}>
-        <section
-          className={`${dashboardStyles.mapPane} panel panel--main`}
-          aria-label="Fleet map"
-        >
-          <div className={`panel-head ${dashboardStyles.mapPanelHead}`}>
-            <h2 className="section-title">Fleet map</h2>
-            <span className="badge">Live status</span>
-          </div>
-          <div className={dashboardStyles.mapBody}>
-            <ShipMap
-              featureCollection={shipFeatureCollection}
-              mapboxToken={mapboxToken}
-              isLoading={mapData.isLoading}
-              isRefreshing={mapData.isFetching && mapPoints.length > 0}
-              error={mapData.error as Error | null}
-              onViewportBoundsChange={handleViewportBoundsChange}
-            />
-          </div>
-        </section>
+      <section
+        className={`${dashboardStyles.mapRow} ${dashboardStyles.mapPane} panel panel--main`}
+        aria-label="Fleet map"
+      >
+        <div className={`panel-head ${dashboardStyles.mapPanelHead}`}>
+          <h2 className="section-title">Fleet map</h2>
+          <span className="badge">Live status</span>
+        </div>
+        <div className={dashboardStyles.mapBody}>
+          <ShipMap
+            featureCollection={shipFeatureCollection}
+            mapboxToken={mapboxToken}
+            isLoading={mapData.isLoading}
+            isRefreshing={mapData.isFetching && mapPoints.length > 0}
+            error={mapData.error as Error | null}
+            onViewportBoundsChange={handleViewportBoundsChange}
+          />
+        </div>
+      </section>
 
-        <div className={dashboardStyles.energyPane}>
+      <div className={dashboardStyles.kpiShipsRow}>
+        <div className={dashboardStyles.kpiSlot}>
           <KpiPanel
-            kpi={kpi.data}
+            view={kpiView}
             isLoading={kpi.isLoading}
             error={kpi.error}
           />
+        </div>
+        <div className={dashboardStyles.shipsSlot}>
+          <ShipsList
+            ships={shipsPage.page?.items ?? []}
+            rangeLabel={shipsPage.rangeLabel}
+            canPrev={shipsPage.canPrev}
+            canNext={shipsPage.canNext}
+            isLoading={shipsPage.isLoading}
+            isFetching={shipsPage.isFetching}
+            onPrev={shipsPage.goPrev}
+            onNext={shipsPage.goNext}
+            highlightedShipIds={highlightedShipIds}
+            error={shipsPage.error as Error | null}
+          />
+        </div>
+      </div>
+
+      <div className={dashboardStyles.energyEventsRow}>
+        <div className={dashboardStyles.energySlot}>
           <EnergyTrendChart
             kind={trend.data?.kind ?? 'OIL'}
             points={trend.data?.points ?? []}
@@ -88,40 +119,17 @@ export function Dashboard() {
             error={trend.error as Error | null}
           />
         </div>
-      </div>
-
-      <div className={dashboardStyles.shipsBand}>
-        <ShipsList
-          ships={shipsPage.page?.items ?? []}
-          rangeLabel={shipsPage.rangeLabel}
-          canPrev={shipsPage.canPrev}
-          canNext={shipsPage.canNext}
-          isLoading={shipsPage.isLoading}
-          isFetching={shipsPage.isFetching}
-          onPrev={shipsPage.goPrev}
-          onNext={shipsPage.goNext}
-          highlightedShipIds={highlightedShipIds}
-          error={shipsPage.error as Error | null}
-        />
-      </div>
-
-      <aside
-        className={dashboardStyles.eventsColumn}
-        aria-label="Live supply chain events"
-      >
-        <div className={dashboardStyles.eventsScroll}>
-          <LiveSupplyChainPanel events={events} />
+        <div className={dashboardStyles.eventsSlot}>
+          <LiveSupplyChainPanel rows={eventRows} />
         </div>
-      </aside>
+      </div>
 
       <div className={dashboardStyles.newsBand}>
-        <div className={dashboardStyles.newsScroll}>
-          <NewsFeed
-            items={news.data ?? []}
-            isLoading={news.isLoading}
-            error={news.error as Error | null}
-          />
-        </div>
+        <NewsFeed
+          items={news.data ?? []}
+          isLoading={news.isLoading}
+          error={news.error as Error | null}
+        />
       </div>
     </div>
   );

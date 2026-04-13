@@ -1,44 +1,30 @@
-/* Map | oil (row 2 full width), then ships | live events, then news. */
+/* Map (full) → KPI | Ships → Energy | Live Events → News (full). Left ~33% / right ~67%. */
 
 .rootGrid {
   display: grid;
-  grid-template-columns: 1fr 320px;
-  grid-template-rows:
-    auto
-    minmax(300px, min(58vh, 600px))
-    minmax(220px, auto)
-    auto;
-  gap: 16px;
-  max-width: 1400px;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto auto auto auto auto;
+  gap: 1rem;
+  max-width: min(1600px, 100%);
   margin: 0 auto;
-  padding: 16px;
+  padding: clamp(12px, 1.5vw, 20px);
   width: 100%;
   box-sizing: border-box;
   min-width: 0;
-  align-items: stretch;
 }
 
 .headerBand {
-  grid-column: 1 / -1;
   grid-row: 1;
   min-width: 0;
 }
 
-/* Row 2: map + oil prices, full width (spans both columns) */
-.mapOilRow {
-  grid-column: 1 / -1;
+.mapRow {
   grid-row: 2;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(220px, 300px);
-  gap: 16px;
   min-width: 0;
-  min-height: 0;
-  align-items: stretch;
 }
 
 .mapPane {
   min-width: 0;
-  min-height: 0;
   display: flex;
   flex-direction: column;
 }
@@ -48,109 +34,61 @@
 }
 
 .mapBody {
-  flex: 1 1 auto;
+  flex-shrink: 0;
+  width: 100%;
   min-height: 0;
   min-width: 0;
+  height: clamp(280px, 48vh, 620px);
   display: flex;
   flex-direction: column;
 }
 
-.energyPane {
-  min-width: 0;
-  min-height: 0;
-  overflow: auto;
-  align-self: stretch;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-/* Row 3 col 1: ships */
-.shipsBand {
-  grid-column: 1;
+/* Row: KPI (narrow) | Ships (wide) */
+.kpiShipsRow {
   grid-row: 3;
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 1rem;
+  min-width: 0;
+  align-items: start;
+}
+
+.kpiSlot {
+  min-width: 0;
+}
+
+.shipsSlot {
+  min-width: 0;
+}
+
+/* Row: Energy | Live Events — equal column widths, fixed-height panels inside */
+.energyEventsRow {
+  grid-row: 4;
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 1rem;
+  min-width: 0;
+  align-items: stretch;
+}
+
+.energySlot,
+.eventsSlot {
   min-width: 0;
   min-height: 0;
-}
-
-/* Row 3 col 2: live events */
-.eventsColumn {
-  grid-column: 2;
-  grid-row: 3;
-  min-width: 0;
-  min-height: 0;
-  max-height: min(55vh, 560px);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.eventsScroll {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-.eventsScroll :global(.panel-head) {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  background: #fff;
 }
 
 .newsBand {
-  grid-column: 1 / -1;
-  grid-row: 4;
+  grid-row: 5;
   min-width: 0;
 }
 
-.newsScroll {
-  max-height: min(40vh, 440px);
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-.newsScroll :global(.panel-head) {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  background: #fff;
-}
-
 @media (max-width: 900px) {
-  .rootGrid {
+  .kpiShipsRow,
+  .energyEventsRow {
     grid-template-columns: 1fr;
-    grid-template-rows: auto;
-    gap: 16px;
   }
 
-  .headerBand {
-    grid-column: 1;
-    grid-row: auto;
-  }
-
-  .mapOilRow {
-    grid-column: 1;
-    grid-row: auto;
-    grid-template-columns: 1fr;
-    grid-template-rows: minmax(260px, 45vh) auto;
-    max-height: none;
-  }
-
-  .shipsBand {
-    grid-column: 1;
-    grid-row: auto;
-  }
-
-  .eventsColumn {
-    grid-column: 1;
-    grid-row: auto;
-    max-height: min(300px, 42vh);
-  }
-
-  .newsBand {
-    grid-column: 1;
-    grid-row: auto;
+  .mapBody {
+    height: clamp(260px, 42vh, 480px);
   }
 }

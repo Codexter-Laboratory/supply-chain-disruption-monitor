@@ -70,6 +70,46 @@ a {
   border-radius: 10px;
   padding: 18px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  height: auto;
+  overflow: visible;
+}
+
+/* Fixed header + scrollable body (Energy, Live Events only). */
+.panel--fixedScrollLayout {
+  display: flex;
+  flex-direction: column;
+  height: 260px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.panel--fixedScrollLayout > .panel-head {
+  flex-shrink: 0;
+}
+
+.panel--fixedScrollLayout .panel-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* News: fixed header, scrollable list (max body height). */
+.panel--newsScroll {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.panel--newsScroll > .panel-head {
+  flex-shrink: 0;
+}
+
+.panel--newsScroll .panel-body {
+  max-height: 300px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .panel--main {
@@ -92,14 +132,23 @@ a {
 
 .panel-head--live {
   align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  gap: 0.75rem;
 }
 
 .section-title {
   margin: 0;
-  font-size: 1.0625rem;
-  font-weight: 620;
+  font-size: 1rem;
+  font-weight: 600;
   letter-spacing: -0.018em;
   color: #0f172a;
+}
+
+.panel-head .muted {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
 }
 
 .badge {

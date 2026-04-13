@@ -1,5 +1,3 @@
-/** GraphQL documents for KPI query/subscription (used by `services/api/kpi.ts`). */
-
 export const GET_KPI_SNAPSHOT_QUERY = `
   query GetKpiSnapshot {
     getKpiSnapshot {
