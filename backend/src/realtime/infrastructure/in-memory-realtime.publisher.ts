@@ -58,7 +58,7 @@ export class InMemoryRealtimePublisher implements RealtimePublisherPort {
         energyPriceUpdated: {
           occurredAt: payload.occurredAt,
           priceId: payload.priceId,
-          kind: payload.type,
+          kind: payload.kind,
           value: payload.value,
         },
       });

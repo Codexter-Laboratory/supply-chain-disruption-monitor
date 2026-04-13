@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Interval } from '@nestjs/schedule';
 import { EventsApplicationService } from '../events/application/events.application.service';
+import { KpiOrchestratorService } from '../kpi/application/kpi-orchestrator.service';
 import { PricingApplicationService } from '../pricing/application/pricing.application.service';
 import { NewsApplicationService } from '../news/application/news.application.service';
 
@@ -21,6 +22,7 @@ export class SupplyChainSimulationOrchestrator {
     private readonly events: EventsApplicationService,
     private readonly pricing: PricingApplicationService,
     private readonly news: NewsApplicationService,
+    private readonly kpiOrchestrator: KpiOrchestratorService,
   ) {}
 
   @Interval(TICK_MS)
@@ -41,6 +43,8 @@ export class SupplyChainSimulationOrchestrator {
     }
     try {
       await this.pricing.ingestionTick();
+      const prices = await this.pricing.getLatestCommodityUnitPrices();
+      await this.kpiOrchestrator.recomputeWithCommodityUnitPrices(prices);
     } catch (err) {
       this.logger.warn(
         `Pricing ingestion tick failed: ${err instanceof Error ? err.message : String(err)}`,

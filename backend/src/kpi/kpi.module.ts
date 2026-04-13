@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { CommodityPricingBridgeModule } from '../integration/commodity-pricing-bridge.module';
 import { ShipsModule } from '../ships/presentation/ships.module';
 import {
   KpiOrchestratorService,
@@ -9,7 +10,7 @@ import { KpiService } from './application/kpi.service';
 import { KpiResolver } from './presentation/kpi.resolver';
 
 @Module({
-  imports: [ShipsModule],
+  imports: [ShipsModule, CommodityPricingBridgeModule],
   providers: [
     KpiService,
     KpiOrchestratorService,

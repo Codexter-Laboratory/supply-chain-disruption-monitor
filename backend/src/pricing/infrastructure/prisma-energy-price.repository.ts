@@ -1,15 +1,18 @@
 import { Injectable } from '@nestjs/common';
+import { CommodityType } from '@supply-chain/maritime-intelligence';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import {
   EnergyPriceRepositoryPort,
   type NewEnergyPriceRecord,
 } from '../application/energy-price.repository.port';
-import type { EnergyPrice, EnergyPriceKind } from '../domain/energy-price.entity';
+import type { EnergyPrice } from '../domain/energy-price.entity';
 import {
+  domainCommodityTypeToPrisma,
   energyPriceFromPrismaRow,
-  energyPriceKindToPrisma,
 } from './energy-price.prisma-mapper';
+
+const COMMODITY_COUNT = Object.values(CommodityType).length;
 
 @Injectable()
 export class PrismaEnergyPriceRepository implements EnergyPriceRepositoryPort {
@@ -18,7 +21,7 @@ export class PrismaEnergyPriceRepository implements EnergyPriceRepositoryPort {
   async insert(record: NewEnergyPriceRecord): Promise<EnergyPrice> {
     const row = await this.prisma.energyPrice.create({
       data: {
-        type: energyPriceKindToPrisma(record.type),
+        type: domainCommodityTypeToPrisma(record.type),
         value: new Prisma.Decimal(record.value),
         timestamp: record.timestamp,
       },
@@ -28,10 +31,13 @@ export class PrismaEnergyPriceRepository implements EnergyPriceRepositoryPort {
 
   async findRecent(
     limit: number,
-    type?: EnergyPriceKind,
+    type?: CommodityType,
   ): Promise<readonly EnergyPrice[]> {
     const rows = await this.prisma.energyPrice.findMany({
-      where: type ? { type: energyPriceKindToPrisma(type) } : undefined,
+      where:
+        type !== undefined
+          ? { type: domainCommodityTypeToPrisma(type) }
+          : undefined,
       orderBy: { timestamp: 'desc' },
       take: limit,
     });
@@ -39,14 +45,34 @@ export class PrismaEnergyPriceRepository implements EnergyPriceRepositoryPort {
   }
 
   async findSeriesChronological(
-    type: EnergyPriceKind,
+    type: CommodityType,
     limit: number,
   ): Promise<readonly EnergyPrice[]> {
     const rows = await this.prisma.energyPrice.findMany({
-      where: { type: energyPriceKindToPrisma(type) },
+      where: { type: domainCommodityTypeToPrisma(type) },
       orderBy: { timestamp: 'desc' },
       take: limit,
     });
     return rows.map(energyPriceFromPrismaRow).reverse();
+  }
+
+  async findLatestPerCommodityType(): Promise<
+    ReadonlyMap<CommodityType, EnergyPrice>
+  > {
+    const rows = await this.prisma.energyPrice.findMany({
+      orderBy: { timestamp: 'desc' },
+      take: Math.max(200, COMMODITY_COUNT * 30),
+    });
+    const map = new Map<CommodityType, EnergyPrice>();
+    for (const row of rows) {
+      const domain = energyPriceFromPrismaRow(row);
+      if (!map.has(domain.type)) {
+        map.set(domain.type, domain);
+      }
+      if (map.size >= COMMODITY_COUNT) {
+        break;
+      }
+    }
+    return map;
   }
 }

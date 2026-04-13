@@ -42,11 +42,6 @@ enum SupplyChainEventType {
   CLEARANCE
 }
 
-enum EnergyPriceType {
-  OIL
-  GAS
-}
-
 model Ship {
   id                 String        @id @default(cuid())
   name               String
@@ -115,9 +110,9 @@ model SupplyChainEvent {
 
 /// Append-only energy price observations (read-oriented for API consumers).
 model EnergyPrice {
-  id        String          @id @default(cuid())
-  type      EnergyPriceType
-  value     Decimal         @db.Decimal(20, 4)
+  id        String         @id @default(cuid())
+  type      CommodityType
+  value     Decimal        @db.Decimal(20, 4)
   timestamp DateTime
 
   @@index([type, timestamp(sort: Desc)])

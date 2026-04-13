@@ -1,5 +1,6 @@
+import { CommodityType } from '@supply-chain/maritime-intelligence';
 import { Field, ObjectType, registerEnumType } from '@nestjs/graphql';
-import { EnergyPriceGraphqlType, EnergyPriceKindGql } from './energy-price.graphql-types';
+import { EnergyPriceGraphqlType } from './energy-price.graphql-types';
 
 export enum TrendDirectionGql {
   UP = 'UP',
@@ -11,8 +12,8 @@ registerEnumType(TrendDirectionGql, { name: 'EnergyPriceTrendDirection' });
 
 @ObjectType('EnergyPriceTrend')
 export class EnergyPriceTrendGraphqlType {
-  @Field(() => EnergyPriceKindGql)
-  kind!: EnergyPriceKindGql;
+  @Field(() => CommodityType)
+  kind!: CommodityType;
 
   @Field(() => [EnergyPriceGraphqlType])
   points!: EnergyPriceGraphqlType[];

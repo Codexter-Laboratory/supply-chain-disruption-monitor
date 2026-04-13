@@ -1,9 +1,5 @@
 import { CommodityType } from '@supply-chain/maritime-intelligence';
-import { Field, Float, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
-
-registerEnumType(CommodityType, {
-  name: 'CommodityType',
-});
+import { Field, Float, Int, ObjectType } from '@nestjs/graphql';
 
 @ObjectType()
 export class VesselsByTypeCountsGql {
