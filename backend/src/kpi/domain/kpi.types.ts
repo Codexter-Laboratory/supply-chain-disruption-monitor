@@ -52,7 +52,7 @@ export interface KpiSnapshot {
   readonly financial: FinancialKpis;
   /** ISO 8601 instant used as `asOf` for delay averaging. */
   readonly computedAt: string;
-  /** Stub-priced total cargo value by {@link CommodityType} (domain-only until pricing is unified). */
+  /** Total cargo value by {@link CommodityType} using application-supplied unit prices. */
   readonly totalCargoValueByCommodity: CommodityValueMap;
   readonly delayedCargoValueByCommodity: CommodityValueMap;
   readonly delayedVolumeByCommodity: CommodityValueMap;
@@ -75,4 +75,6 @@ export interface KpiTimeContext {
 
 export interface KpiComputationInput extends KpiPriceInputs, KpiTimeContext {
   readonly ships: readonly KpiShipSource[];
+  /** Spot-style unit prices by commodity (from pricing BC); calculator treats missing keys as 0. */
+  readonly commodityUnitPrices: CommodityValueMap;
 }

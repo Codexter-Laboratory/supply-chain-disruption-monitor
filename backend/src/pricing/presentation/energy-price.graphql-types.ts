@@ -1,19 +1,13 @@
-import { Field, ID, ObjectType, registerEnumType } from '@nestjs/graphql';
-
-export enum EnergyPriceKindGql {
-  OIL = 'OIL',
-  GAS = 'GAS',
-}
-
-registerEnumType(EnergyPriceKindGql, { name: 'EnergyPriceKind' });
+import { CommodityType } from '@supply-chain/maritime-intelligence';
+import { Field, ID, ObjectType } from '@nestjs/graphql';
 
 @ObjectType('EnergyPrice')
 export class EnergyPriceGraphqlType {
   @Field(() => ID)
   id!: string;
 
-  @Field(() => EnergyPriceKindGql)
-  type!: EnergyPriceKindGql;
+  @Field(() => CommodityType)
+  type!: CommodityType;
 
   @Field()
   value!: string;

@@ -8,11 +8,7 @@ import {
   EnergyPriceTrendArgs,
   RecentEnergyPricesArgs,
 } from './pricing-queries.args';
-import {
-  gqlKindToDomain,
-  toEnergyPriceGraphql,
-  toEnergyPriceTrendGraphql,
-} from './energy-price.dto-mapper';
+import { toEnergyPriceGraphql, toEnergyPriceTrendGraphql } from './energy-price.dto-mapper';
 
 @Resolver(() => EnergyPriceGraphqlType)
 @UsePipes(graphqlArgsValidationPipe)
@@ -23,10 +19,7 @@ export class PricingResolver {
   async recentEnergyPrices(
     @Args() args: RecentEnergyPricesArgs,
   ): Promise<EnergyPriceGraphqlType[]> {
-    const rows = await this.pricing.listRecent(
-      args.limit,
-      args.type !== undefined ? gqlKindToDomain(args.type) : undefined,
-    );
+    const rows = await this.pricing.listRecent(args.limit, args.type);
     return rows.map(toEnergyPriceGraphql);
   }
 
@@ -34,10 +27,7 @@ export class PricingResolver {
   async energyPriceTrend(
     @Args() args: EnergyPriceTrendArgs,
   ): Promise<EnergyPriceTrendGraphqlType> {
-    const trend = await this.pricing.energyPriceTrend(
-      gqlKindToDomain(args.kind),
-      args.limit,
-    );
+    const trend = await this.pricing.energyPriceTrend(args.kind, args.limit);
     return toEnergyPriceTrendGraphql(trend);
   }
 }

@@ -4,7 +4,11 @@ import type {
   ShipClassificationSource,
 } from '@supply-chain/maritime-intelligence';
 import { computeKpiSnapshot } from '../domain/kpi.calculator';
-import type { KpiSnapshot } from '../domain/kpi.types';
+import {
+  createEmptyCommodityMap,
+  type CommodityValueMap,
+  type KpiSnapshot,
+} from '../domain/kpi.types';
 
 /** Placeholder benchmarks until pricing service is wired. */
 const DEFAULT_MOCK_OIL_PRICE_USD_PER_BARREL = 78.5;
@@ -14,6 +18,8 @@ export interface KpiSnapshotOptions {
   readonly oilPricePerBarrel?: number;
   readonly lngPricePerM3?: number;
   readonly unitPriceByCargoType?: Partial<Record<CargoType, number>>;
+  /** Latest commodity spot numbers from pricing; omitted → all zeros for commodity KPI lines. */
+  readonly commodityUnitPrices?: CommodityValueMap;
   /** Defaults to `new Date()` when omitted. */
   readonly asOf?: Date;
 }
@@ -32,6 +38,8 @@ export class KpiService {
     const lngPricePerM3 =
       options.lngPricePerM3 ?? DEFAULT_MOCK_LNG_PRICE_USD_PER_M3;
     const asOf = options.asOf ?? new Date();
+    const commodityUnitPrices =
+      options.commodityUnitPrices ?? createEmptyCommodityMap();
 
     return computeKpiSnapshot({
       ships,
@@ -39,6 +47,7 @@ export class KpiService {
       lngPricePerM3,
       unitPriceByCargoType: options.unitPriceByCargoType,
       asOf,
+      commodityUnitPrices,
     });
   }
 }

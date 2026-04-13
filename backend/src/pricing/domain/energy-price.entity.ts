@@ -1,15 +1,14 @@
+import { CommodityType } from '@supply-chain/maritime-intelligence';
 import { InvalidDomainStateError } from '../../common/errors/domain.error';
-
-export type EnergyPriceKind = 'OIL' | 'GAS';
 
 export type EnergyPriceProps = {
   readonly id: string;
-  readonly type: EnergyPriceKind;
+  readonly type: CommodityType;
   readonly value: string;
   readonly timestamp: Date;
 };
 
-const KINDS: EnergyPriceKind[] = ['OIL', 'GAS'];
+const COMMODITY_SET = new Set<string>(Object.values(CommodityType));
 const VALUE_PATTERN = /^\d+(\.\d+)?$/;
 
 /** Append-only price observation (historical series). */
@@ -21,8 +20,8 @@ export class EnergyPrice {
     if (!id) {
       throw new InvalidDomainStateError('EnergyPrice id must be non-empty');
     }
-    if (!KINDS.includes(raw.type)) {
-      throw new InvalidDomainStateError(`Unknown energy price kind: ${raw.type}`);
+    if (!COMMODITY_SET.has(raw.type)) {
+      throw new InvalidDomainStateError(`Unknown energy price commodity: ${raw.type}`);
     }
     const value = raw.value?.trim();
     if (!value || !VALUE_PATTERN.test(value)) {
@@ -44,7 +43,7 @@ export class EnergyPrice {
   get id(): string {
     return this.props.id;
   }
-  get type(): EnergyPriceKind {
+  get type(): CommodityType {
     return this.props.type;
   }
   get value(): string {

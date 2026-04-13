@@ -1,7 +1,6 @@
 import {
   CargoType,
   classifyVessel,
-  CommodityType,
   commodityFromShipCargoType,
   estimateCargoVolume,
   estimateMaritimeCapacity,
@@ -24,26 +23,6 @@ import {
   type KpiShipSource,
   type KpiSnapshot,
 } from './kpi.types';
-
-/** Temporary flat unit prices until pricing is unified (step 9.5). */
-function getPriceForCommodity(commodity: CommodityType): number {
-  switch (commodity) {
-    case CommodityType.OIL:
-      return 75;
-    case CommodityType.LNG:
-      return 30;
-    case CommodityType.CONTAINER:
-      return 10;
-    case CommodityType.BULK:
-      return 8;
-    case CommodityType.PETROCHEMICALS:
-      return 20;
-    case CommodityType.LPG:
-      return 25;
-    case CommodityType.REFINED_PRODUCTS:
-      return 55;
-  }
-}
 
 function capacityNumericForCargoVolumeEstimate(capacity: string): number {
   const n = Number.parseFloat(capacity.trim());
@@ -96,7 +75,7 @@ function sumRecordValues(rec: Record<CargoTypeKey, number>): number {
  * Pure KPI aggregation. Classifies each source via shared maritime functions.
  */
 export function computeKpiSnapshot(input: KpiComputationInput): KpiSnapshot {
-  const { ships, asOf } = input;
+  const { ships, asOf, commodityUnitPrices } = input;
   const asOfMs = asOf.getTime();
   const unitPrices = effectiveCargoUnitPrices(input);
 
@@ -121,7 +100,8 @@ export function computeKpiSnapshot(input: KpiComputationInput): KpiSnapshot {
     const commodity =
       ship.commodity ?? commodityFromShipCargoType(ship.cargoType);
     const commodityVolume = commodityVolumeForKpi(ship);
-    const stubCargoValue = commodityVolume * getPriceForCommodity(commodity);
+    const unitPrice = commodityUnitPrices[commodity] ?? 0;
+    const commodityCargoValue = commodityVolume * unitPrice;
 
     vesselsByType[classified.vesselType] += 1;
     volumeByCargoType[classified.cargoType] += capacity.value;
@@ -133,10 +113,10 @@ export function computeKpiSnapshot(input: KpiComputationInput): KpiSnapshot {
     );
     valueByCargoType[classified.cargoType] += shipValue;
 
-    totalCargoValueByCommodity[commodity] += stubCargoValue;
+    totalCargoValueByCommodity[commodity] += commodityCargoValue;
 
     if (delayed) {
-      delayedCargoValueByCommodity[commodity] += stubCargoValue;
+      delayedCargoValueByCommodity[commodity] += commodityCargoValue;
       delayedVolumeByCommodity[commodity] += commodityVolume;
       delayedVessels += 1;
       delayedVesselsByType[classified.vesselType] += 1;

@@ -1,3 +1,4 @@
+import type { CommodityType } from '@supply-chain/maritime-intelligence';
 import { RealtimeEventBase } from './realtime-event.base';
 
 export class EnergyPriceRecordedRealtimeEvent extends RealtimeEventBase {
@@ -6,7 +7,7 @@ export class EnergyPriceRecordedRealtimeEvent extends RealtimeEventBase {
   constructor(
     occurredAt: Date,
     public readonly priceId: string,
-    public readonly type: string,
+    public readonly kind: CommodityType,
     public readonly value: string,
   ) {
     super(occurredAt);

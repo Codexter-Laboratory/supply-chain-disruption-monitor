@@ -5,10 +5,13 @@ import { PUB_SUB } from '../../realtime/application/pub-sub.token';
 import { KPI_UPDATED_TOPIC } from '../../realtime/application/realtime-topics';
 import { ShipApplicationService } from '../../ships/application/ship.application.service';
 import type {
+  CommodityValueMap,
   FinancialKpis,
   KpiSnapshot,
   MaritimeKpis,
 } from '../domain/kpi.types';
+import { COMMODITY_UNIT_PRICE_READER } from './commodity-unit-price-reader.port';
+import type { CommodityUnitPriceReaderPort } from './commodity-unit-price-reader.port';
 import { KpiService } from './kpi.service';
 import { KPI_REFRESH_SCHEDULER, type KpiRefreshSchedulerPort } from './kpi-refresh.port';
 import { shipToClassificationSource } from './ship-classification.adapter';
@@ -42,6 +45,8 @@ export class KpiOrchestratorService
   constructor(
     private readonly ships: ShipApplicationService,
     private readonly kpi: KpiService,
+    @Inject(COMMODITY_UNIT_PRICE_READER)
+    private readonly commodityPrices: CommodityUnitPriceReaderPort,
     @Inject(PUB_SUB) private readonly pubSub: PubSub,
   ) {}
 
@@ -100,13 +105,41 @@ export class KpiOrchestratorService
   }
 
   /**
-   * Loads fleet, runs pure KPI calculator, updates cache, emits if changed.
+   * Loads fleet, resolves commodity prices via {@link COMMODITY_UNIT_PRICE_READER}, runs calculator.
    */
   async recompute(): Promise<void> {
+    await this.recomputeWithOptionalPrices(undefined);
+  }
+
+  /**
+   * Same as {@link recompute} but uses caller-supplied prices (e.g. app orchestrator after a pricing tick).
+   */
+  async recomputeWithCommodityUnitPrices(
+    commodityUnitPrices: CommodityValueMap,
+  ): Promise<void> {
+    await this.recomputeWithOptionalPrices(commodityUnitPrices);
+  }
+
+  private async recomputeWithOptionalPrices(
+    commodityUnitPrices: CommodityValueMap | undefined,
+  ): Promise<void> {
     this.log.debug('KPI recompute started');
     const fleet = await this.ships.listAllShipsOrdered();
     const sources = fleet.map(shipToClassificationSource);
-    const snapshot = this.kpi.buildSnapshot(sources);
+    let resolved = commodityUnitPrices;
+    if (resolved === undefined) {
+      try {
+        resolved = await this.commodityPrices.getLatestCommodityUnitPrices();
+      } catch (e) {
+        this.log.warn(
+          `KPI recompute: commodity prices unavailable (${e instanceof Error ? e.message : String(e)}); using zeros`,
+        );
+        resolved = undefined;
+      }
+    }
+    const snapshot = this.kpi.buildSnapshot(sources, {
+      commodityUnitPrices: resolved,
+    });
     this.emitUpdate(snapshot);
     this.log.debug('KPI recompute finished');
   }
@@ -151,7 +184,13 @@ function snapshotsShallowEqual(
   return (
     a.computedAt === b.computedAt &&
     maritimeKpisEqual(a.maritime, b.maritime) &&
-    financialKpisEqual(a.financial, b.financial)
+    financialKpisEqual(a.financial, b.financial) &&
+    numberRecordsEqual(a.totalCargoValueByCommodity, b.totalCargoValueByCommodity) &&
+    numberRecordsEqual(
+      a.delayedCargoValueByCommodity,
+      b.delayedCargoValueByCommodity,
+    ) &&
+    numberRecordsEqual(a.delayedVolumeByCommodity, b.delayedVolumeByCommodity)
   );
 }
 
