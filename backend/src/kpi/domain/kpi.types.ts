@@ -1,8 +1,25 @@
-import type {
-  CargoType,
-  ShipClassificationSource,
-  VesselType,
+import {
+  CommodityType,
+  type CargoType,
+  type ShipClassificationSource,
+  type VesselType,
 } from '@supply-chain/maritime-intelligence';
+
+export type CommodityValueMap = Record<CommodityType, number>;
+
+export function createEmptyCommodityMap(): CommodityValueMap {
+  const initial: Partial<Record<CommodityType, number>> = {};
+  for (const key of Object.values(CommodityType) as CommodityType[]) {
+    initial[key] = 0;
+  }
+  return initial as CommodityValueMap;
+}
+
+/** Optional commodity / volume on top of {@link ShipClassificationSource} for KPI aggregation. */
+export type KpiShipSource = ShipClassificationSource & {
+  readonly commodity?: CommodityType;
+  readonly cargoVolume?: number;
+};
 
 /** Milliseconds in one hour (time math only). */
 export const MILLISECONDS_PER_HOUR = 3_600_000 as const;
@@ -35,6 +52,10 @@ export interface KpiSnapshot {
   readonly financial: FinancialKpis;
   /** ISO 8601 instant used as `asOf` for delay averaging. */
   readonly computedAt: string;
+  /** Stub-priced total cargo value by {@link CommodityType} (domain-only until pricing is unified). */
+  readonly totalCargoValueByCommodity: CommodityValueMap;
+  readonly delayedCargoValueByCommodity: CommodityValueMap;
+  readonly delayedVolumeByCommodity: CommodityValueMap;
 }
 
 export interface KpiPriceInputs {
@@ -53,5 +74,5 @@ export interface KpiTimeContext {
 }
 
 export interface KpiComputationInput extends KpiPriceInputs, KpiTimeContext {
-  readonly ships: readonly ShipClassificationSource[];
+  readonly ships: readonly KpiShipSource[];
 }

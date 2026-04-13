@@ -1,6 +1,9 @@
 import {
   CargoType,
   classifyVessel,
+  CommodityType,
+  commodityFromShipCargoType,
+  estimateCargoVolume,
   estimateMaritimeCapacity,
   isShipDelayed,
   VesselType,
@@ -15,10 +18,44 @@ import {
   lngCargoVolumeM3,
 } from './conversion';
 import {
+  createEmptyCommodityMap,
   MILLISECONDS_PER_HOUR,
   type KpiComputationInput,
+  type KpiShipSource,
   type KpiSnapshot,
 } from './kpi.types';
+
+/** Temporary flat unit prices until pricing is unified (step 9.5). */
+function getPriceForCommodity(commodity: CommodityType): number {
+  switch (commodity) {
+    case CommodityType.OIL:
+      return 75;
+    case CommodityType.LNG:
+      return 30;
+    case CommodityType.CONTAINER:
+      return 10;
+    case CommodityType.BULK:
+      return 8;
+    case CommodityType.PETROCHEMICALS:
+      return 20;
+    case CommodityType.LPG:
+      return 25;
+    case CommodityType.REFINED_PRODUCTS:
+      return 55;
+  }
+}
+
+function capacityNumericForCargoVolumeEstimate(capacity: string): number {
+  const n = Number.parseFloat(capacity.trim());
+  return Number.isFinite(n) && n >= 0 ? n : 0;
+}
+
+function commodityVolumeForKpi(ship: KpiShipSource): number {
+  if (ship.cargoVolume !== undefined) {
+    return ship.cargoVolume;
+  }
+  return estimateCargoVolume(capacityNumericForCargoVolumeEstimate(ship.capacity));
+}
 
 function zeroVesselsByType(): Record<VesselTypeKey, number> {
   const initial: Partial<Record<VesselTypeKey, number>> = {};
@@ -67,6 +104,9 @@ export function computeKpiSnapshot(input: KpiComputationInput): KpiSnapshot {
   const delayedVesselsByType = zeroVesselsByType();
   const volumeByCargoType = zeroCargoTypeNumbers();
   const valueByCargoType = zeroCargoTypeNumbers();
+  const totalCargoValueByCommodity = createEmptyCommodityMap();
+  const delayedCargoValueByCommodity = createEmptyCommodityMap();
+  const delayedVolumeByCommodity = createEmptyCommodityMap();
 
   let delayedVessels = 0;
   let totalDeadweightTonnage = 0;
@@ -78,6 +118,10 @@ export function computeKpiSnapshot(input: KpiComputationInput): KpiSnapshot {
     const classified = classifyVessel(ship);
     const capacity = estimateMaritimeCapacity(ship);
     const delayed = isShipDelayed(ship);
+    const commodity =
+      ship.commodity ?? commodityFromShipCargoType(ship.cargoType);
+    const commodityVolume = commodityVolumeForKpi(ship);
+    const stubCargoValue = commodityVolume * getPriceForCommodity(commodity);
 
     vesselsByType[classified.vesselType] += 1;
     volumeByCargoType[classified.cargoType] += capacity.value;
@@ -89,7 +133,11 @@ export function computeKpiSnapshot(input: KpiComputationInput): KpiSnapshot {
     );
     valueByCargoType[classified.cargoType] += shipValue;
 
+    totalCargoValueByCommodity[commodity] += stubCargoValue;
+
     if (delayed) {
+      delayedCargoValueByCommodity[commodity] += stubCargoValue;
+      delayedVolumeByCommodity[commodity] += commodityVolume;
       delayedVessels += 1;
       delayedVesselsByType[classified.vesselType] += 1;
       if (classified.delayStartTime !== null) {
@@ -138,5 +186,8 @@ export function computeKpiSnapshot(input: KpiComputationInput): KpiSnapshot {
       valueByCargoType,
     },
     computedAt: asOf.toISOString(),
+    totalCargoValueByCommodity,
+    delayedCargoValueByCommodity,
+    delayedVolumeByCommodity,
   };
 }
