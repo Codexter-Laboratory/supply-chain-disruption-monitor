@@ -7,6 +7,8 @@ import { EnergyTrendChart } from '../features/pricing/components/EnergyTrendChar
 import { useEnergyPriceTrend } from '../features/pricing/hooks/useEnergyPriceTrend';
 import { NewsFeed } from '../features/news/components/NewsFeed';
 import { useRecentNews } from '../features/news/hooks/useRecentNews';
+import { KpiPanel } from '../features/kpi/components/KpiPanel';
+import { useKpi } from '../features/kpi/hooks/useKpi';
 import { ShipMap } from '../features/map/components/ShipMap';
 import { useShipMapFeatureCollection } from '../features/map/hooks/useShipMapFeatureCollection';
 import { useShipRealtimeMap } from '../features/map/hooks/useShipRealtimeMap';
@@ -37,6 +39,7 @@ export function Dashboard() {
 
   const trend = useEnergyPriceTrend('OIL');
   const news = useRecentNews();
+  const kpi = useKpi();
 
   const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
@@ -72,6 +75,11 @@ export function Dashboard() {
         </section>
 
         <div className={dashboardStyles.energyPane}>
+          <KpiPanel
+            kpi={kpi.data}
+            isLoading={kpi.isLoading}
+            error={kpi.error}
+          />
           <EnergyTrendChart
             kind={trend.data?.kind ?? 'OIL'}
             points={trend.data?.points ?? []}
