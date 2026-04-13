@@ -1,0 +1,12 @@
+# Build context is repo root (see backend/docker-compose.yml). Keep images lean.
+.git
+**/.env
+**/.env.*
+!**/.env.example
+**/node_modules
+**/dist
+**/*.md
+coverage
+.nyc_output
+.DS_Store
+frontend

@@ -60,6 +60,9 @@
   min-height: 0;
   overflow: auto;
   align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 /* Row 3 col 1: ships */

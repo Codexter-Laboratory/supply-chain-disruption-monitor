@@ -17,8 +17,9 @@ services:
 
   api:
     build:
-      context: .
-      dockerfile: Dockerfile
+      # Monorepo root: includes shared/domain/maritime-intelligence for file: dependency
+      context: ..
+      dockerfile: backend/Dockerfile
     ports:
       - '3000:3000'
     environment:

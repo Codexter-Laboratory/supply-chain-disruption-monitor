@@ -1,0 +1,55 @@
+.root {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle, #e5e7eb);
+  background: var(--panel-bg, #fafafa);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.title {
+  margin: 0 0 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted, #6b7280);
+}
+
+.section {
+  margin-top: 8px;
+}
+
+.section:first-of-type {
+  margin-top: 0;
+}
+
+.sectionLabel {
+  margin: 0 0 4px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--muted, #6b7280);
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 2px 0;
+}
+
+.dim {
+  color: var(--muted, #6b7280);
+}
+
+.error {
+  margin: 0;
+  color: #b91c1c;
+  font-size: 0.8125rem;
+}
