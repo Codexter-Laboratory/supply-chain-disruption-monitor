@@ -1,7 +1,9 @@
-import type { KpiSnapshot } from '../domain/kpi.types';
+import { CommodityType } from '@supply-chain/maritime-intelligence';
+import type { CommodityValueMap, KpiSnapshot } from '../domain/kpi.types';
 import {
   CargoValueByTypeGql,
   CargoVolumeByTypeGql,
+  CommodityValueEntry,
   FinancialKpisGraphqlType,
   KpiSnapshotGraphqlType,
   MaritimeKpisGraphqlType,
@@ -44,6 +46,19 @@ function mapCargoValue(v: Record<string, number>): CargoValueByTypeGql {
   return o;
 }
 
+function mapCommodityRecordToEntries(
+  record: CommodityValueMap,
+): CommodityValueEntry[] {
+  const entries: CommodityValueEntry[] = [];
+  for (const commodity of Object.values(CommodityType) as CommodityType[]) {
+    const row = new CommodityValueEntry();
+    row.commodity = commodity;
+    row.value = record[commodity];
+    entries.push(row);
+  }
+  return entries;
+}
+
 export function kpiSnapshotToGraphql(snapshot: KpiSnapshot): KpiSnapshotGraphqlType {
   const maritime = new MaritimeKpisGraphqlType();
   maritime.totalVessels = snapshot.maritime.totalVessels;
@@ -74,5 +89,14 @@ export function kpiSnapshotToGraphql(snapshot: KpiSnapshot): KpiSnapshotGraphqlT
   root.maritime = maritime;
   root.financial = financial;
   root.computedAt = snapshot.computedAt;
+  root.totalCargoValueByCommodity = mapCommodityRecordToEntries(
+    snapshot.totalCargoValueByCommodity,
+  );
+  root.delayedCargoValueByCommodity = mapCommodityRecordToEntries(
+    snapshot.delayedCargoValueByCommodity,
+  );
+  root.delayedVolumeByCommodity = mapCommodityRecordToEntries(
+    snapshot.delayedVolumeByCommodity,
+  );
   return root;
 }
