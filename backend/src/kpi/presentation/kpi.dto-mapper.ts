@@ -1,6 +1,8 @@
 import { CommodityType } from '@supply-chain/maritime-intelligence';
+import type { Alert } from '../../alerts/domain/alert.entity';
 import type { CommodityValueMap, KpiSnapshot } from '../domain/kpi.types';
 import {
+  AlertGraphqlType,
   CargoValueByTypeGql,
   CargoVolumeByTypeGql,
   CommodityValueEntry,
@@ -59,6 +61,16 @@ function mapCommodityRecordToEntries(
   return entries;
 }
 
+function mapAlertToGraphql(alert: Alert): AlertGraphqlType {
+  const gql = new AlertGraphqlType();
+  gql.id = alert.id;
+  gql.type = alert.type;
+  gql.severity = alert.severity;
+  gql.message = alert.message;
+  gql.createdAt = alert.createdAt;
+  return gql;
+}
+
 export function kpiSnapshotToGraphql(snapshot: KpiSnapshot): KpiSnapshotGraphqlType {
   const maritime = new MaritimeKpisGraphqlType();
   maritime.totalVessels = snapshot.maritime.totalVessels;
@@ -98,5 +110,6 @@ export function kpiSnapshotToGraphql(snapshot: KpiSnapshot): KpiSnapshotGraphqlT
   root.delayedVolumeByCommodity = mapCommodityRecordToEntries(
     snapshot.delayedVolumeByCommodity,
   );
+  root.alerts = (snapshot.alerts ?? []).map(mapAlertToGraphql);
   return root;
 }
