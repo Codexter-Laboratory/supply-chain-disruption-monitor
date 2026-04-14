@@ -2,6 +2,14 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type AlertGraphqlType {
+  createdAt: DateTime!
+  id: String!
+  message: String!
+  severity: String!
+  type: String!
+}
+
 type CargoValueByTypeGql {
   CONTAINER_GOODS: Float!
   CRUDE_OIL: Float!
@@ -45,17 +53,12 @@ scalar DateTime
 type EnergyPrice {
   id: ID!
   timestamp: DateTime!
-  type: EnergyPriceKind!
+  type: CommodityType!
   value: String!
 }
 
-enum EnergyPriceKind {
-  GAS
-  OIL
-}
-
 type EnergyPriceTrend {
-  kind: EnergyPriceKind!
+  kind: CommodityType!
   points: [EnergyPrice!]!
   simpleTrend: EnergyPriceTrendDirection!
 }
@@ -67,7 +70,7 @@ enum EnergyPriceTrendDirection {
 }
 
 type EnergyPriceUpdatedPayload {
-  kind: EnergyPriceKind!
+  kind: CommodityType!
   occurredAt: DateTime!
   priceId: ID!
   value: String!
@@ -81,6 +84,7 @@ type FinancialKpisGraphqlType {
 }
 
 type KpiSnapshot {
+  alerts: [AlertGraphqlType!]!
   computedAt: String!
   delayedCargoValueByCommodity: [CommodityValueEntry!]!
   delayedVolumeByCommodity: [CommodityValueEntry!]!
@@ -111,10 +115,10 @@ type NewsItem {
 }
 
 type Query {
-  energyPriceTrend(kind: EnergyPriceKind!, limit: Int! = 24): EnergyPriceTrend!
+  energyPriceTrend(kind: CommodityType!, limit: Int! = 24): EnergyPriceTrend!
   getKpiSnapshot: KpiSnapshot!
   health: String!
-  recentEnergyPrices(limit: Int! = 50, type: EnergyPriceKind): [EnergyPrice!]!
+  recentEnergyPrices(limit: Int! = 50, type: CommodityType): [EnergyPrice!]!
   recentNews(limit: Int! = 30): [NewsItem!]!
   recentSupplyChainEvents(limit: Int! = 20, shipId: ID!): [SupplyChainEvent!]!
   routeHistoryForShip(shipId: ID!): [RouteLeg!]!

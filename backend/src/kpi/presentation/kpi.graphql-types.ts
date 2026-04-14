@@ -64,6 +64,24 @@ export class CommodityValueEntry {
   value!: number;
 }
 
+@ObjectType()
+export class AlertGraphqlType {
+  @Field()
+  id!: string;
+
+  @Field()
+  type!: string;
+
+  @Field()
+  severity!: string;
+
+  @Field()
+  message!: string;
+
+  @Field(() => Date)
+  createdAt!: Date;
+}
+
 @ObjectType('KpiSnapshot')
 export class KpiSnapshotGraphqlType {
   @Field(() => MaritimeKpisGraphqlType) maritime!: MaritimeKpisGraphqlType;
@@ -75,4 +93,6 @@ export class KpiSnapshotGraphqlType {
   delayedCargoValueByCommodity!: CommodityValueEntry[];
   @Field(() => [CommodityValueEntry])
   delayedVolumeByCommodity!: CommodityValueEntry[];
+  @Field(() => [AlertGraphqlType])
+  alerts!: AlertGraphqlType[];
 }
