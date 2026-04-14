@@ -135,18 +135,19 @@
   min-width: 0;
 }
 
-/* Row: Energy | Live Events — equal column widths, fixed-height panels inside */
+/* Row: Energy | Live Events | Alerts */
 .energyEventsRow {
   grid-row: 4;
   display: grid;
-  grid-template-columns: 1fr 2fr;
+  grid-template-columns: 1fr 1.5fr minmax(220px, 1fr);
   gap: 1rem;
   min-width: 0;
   align-items: stretch;
 }
 
 .energySlot,
-.eventsSlot {
+.eventsSlot,
+.alertsSlot {
   min-width: 0;
   min-height: 0;
 }

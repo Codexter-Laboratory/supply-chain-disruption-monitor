@@ -54,6 +54,33 @@ export interface NewsItem {
   url: string;
 }
 
+export type Alert = {
+  id: string;
+  type: string;
+  severity: string;
+  message: string;
+  createdAt: string;
+};
+
+export interface KpiMaritimeSlice {
+  readonly totalVessels: number;
+  readonly delayedVessels: number;
+  readonly averageDelayTimeHours: number;
+}
+
+export interface KpiFinancialSlice {
+  readonly totalCargoValue: number;
+  readonly estimatedOilValue: number;
+  readonly estimatedLngValue: number;
+}
+
+export interface KpiSnapshot {
+  readonly computedAt: string;
+  readonly maritime: KpiMaritimeSlice;
+  readonly financial: KpiFinancialSlice;
+  readonly alerts: Alert[];
+}
+
 export interface ShipStatusChangedPayload {
   occurredAt: string;
   shipId: string;

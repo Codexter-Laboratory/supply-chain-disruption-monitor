@@ -12,6 +12,13 @@ export const GET_KPI_SNAPSHOT_QUERY = `
         estimatedOilValue
         estimatedLngValue
       }
+      alerts {
+        id
+        type
+        severity
+        message
+        createdAt
+      }
     }
   }
 `;
@@ -29,6 +36,13 @@ export const KPI_UPDATED_SUBSCRIPTION = `
         totalCargoValue
         estimatedOilValue
         estimatedLngValue
+      }
+      alerts {
+        id
+        type
+        severity
+        message
+        createdAt
       }
     }
   }

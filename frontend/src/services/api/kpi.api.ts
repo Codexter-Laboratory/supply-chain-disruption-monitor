@@ -1,26 +1,9 @@
+import type { KpiSnapshot } from '../../types/api';
 import { getGraphqlWsClient, graphqlHttpClient } from './client';
 import {
   GET_KPI_SNAPSHOT_QUERY,
   KPI_UPDATED_SUBSCRIPTION,
 } from '../../lib/graphql/kpi';
-
-export interface KpiMaritimeSlice {
-  readonly totalVessels: number;
-  readonly delayedVessels: number;
-  readonly averageDelayTimeHours: number;
-}
-
-export interface KpiFinancialSlice {
-  readonly totalCargoValue: number;
-  readonly estimatedOilValue: number;
-  readonly estimatedLngValue: number;
-}
-
-export interface KpiSnapshot {
-  readonly computedAt: string;
-  readonly maritime: KpiMaritimeSlice;
-  readonly financial: KpiFinancialSlice;
-}
 
 interface GetKpiSnapshotResponse {
   getKpiSnapshot: KpiSnapshot;
@@ -34,7 +17,11 @@ export async function getKpiSnapshot(): Promise<KpiSnapshot> {
   const data = await graphqlHttpClient.request<GetKpiSnapshotResponse>(
     GET_KPI_SNAPSHOT_QUERY,
   );
-  return data.getKpiSnapshot;
+  const s = data.getKpiSnapshot;
+  return {
+    ...s,
+    alerts: Array.isArray(s.alerts) ? s.alerts : [],
+  };
 }
 
 export interface KpiUpdatedHandlers {
@@ -52,7 +39,10 @@ export function subscribeKpiUpdated(handlers: KpiUpdatedHandlers): () => void {
       next: (result) => {
         const snap = result.data?.kpiUpdated;
         if (snap) {
-          handlers.next(snap);
+          handlers.next({
+            ...snap,
+            alerts: Array.isArray(snap.alerts) ? snap.alerts : [],
+          });
         }
       },
       error: handlers.error ?? (() => {}),
@@ -60,3 +50,5 @@ export function subscribeKpiUpdated(handlers: KpiUpdatedHandlers): () => void {
     },
   );
 }
+
+export type { KpiSnapshot };

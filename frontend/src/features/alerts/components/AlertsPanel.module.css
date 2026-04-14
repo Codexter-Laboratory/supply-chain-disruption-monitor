@@ -1,0 +1,78 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-height: 320px;
+}
+
+.listWrap {
+  flex: 1;
+  min-height: 0;
+  max-height: 13.5rem;
+  overflow-y: auto;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.badge {
+  flex-shrink: 0;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.15rem 0.35rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.badgeCritical {
+  background: rgba(220, 38, 38, 0.12);
+  color: #b91c1c;
+}
+
+.badgeWarning {
+  background: rgba(234, 88, 12, 0.14);
+  color: #c2410c;
+}
+
+.badgeInfo {
+  background: rgba(100, 116, 139, 0.16);
+  color: #475569;
+}
+
+.body {
+  flex: 1;
+  min-width: 0;
+}
+
+.message {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  color: #0f172a;
+}
+
+.time {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.6875rem;
+  color: #64748b;
+}
