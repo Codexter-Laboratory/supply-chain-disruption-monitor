@@ -1,9 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { CommodityType } from '@supply-chain/maritime-intelligence';
 import type {
   EnergyPriceQuote,
   EnergyPriceQuoteProviderPort,
 } from '../../application/energy-price-quote.provider.port';
+import {
+  EXTERNAL_PRICING_API,
+  type ExternalPricingApiPort,
+} from '../../application/external-pricing-api.port';
 import { MarketSignal } from '../../domain/market-signal';
 import { mapMarketSignalToCommodity } from '../../domain/market-signal.mapper';
 
@@ -24,9 +28,33 @@ const STATIC_PRICE_BY_SIGNAL: Record<MarketSignal, number> = {
 
 const REFINED_PRODUCTS_FALLBACK = 70;
 
+/** Maps commodity keys to keys expected in {@link ExternalPricingApiPort} responses (OIL only wired). */
+const EXTERNAL_SYMBOL_MAP: Record<string, string> = {
+  OIL: 'BRENT',
+  LNG: 'TTF',
+  CONTAINER: 'SCFI',
+};
+
+/** Fallback when external OIL price is missing or invalid (matches first OIL signal in loop). */
+const EXISTING_STATIC_OIL_PRICE = STATIC_PRICE_BY_SIGNAL[MarketSignal.BRENT_CRUDE];
+
 @Injectable()
 export class RealEnergyPriceQuoteProvider implements EnergyPriceQuoteProviderPort {
+  private readonly logger = new Logger(RealEnergyPriceQuoteProvider.name);
+
+  constructor(
+    @Inject(EXTERNAL_PRICING_API)
+    private readonly externalApi: ExternalPricingApiPort,
+  ) {}
+
   async fetchQuotes(): Promise<readonly EnergyPriceQuote[]> {
+    let externalPrices: Record<string, number> | null = null;
+    try {
+      externalPrices = await this.externalApi.fetchLatestPrices();
+    } catch {
+      externalPrices = null;
+    }
+
     const at = new Date();
     const byCommodity = new Map<CommodityType, EnergyPriceQuote>();
 
@@ -49,6 +77,25 @@ export class RealEnergyPriceQuoteProvider implements EnergyPriceQuoteProviderPor
         type: CommodityType.REFINED_PRODUCTS,
         value: REFINED_PRODUCTS_FALLBACK.toFixed(4),
         at,
+      });
+    }
+
+    const oilSymbol = EXTERNAL_SYMBOL_MAP['OIL'];
+    const externalOilPrice = externalPrices?.[oilSymbol];
+    const oilPrice =
+      typeof externalOilPrice === 'number' && Number.isFinite(externalOilPrice)
+        ? externalOilPrice
+        : EXISTING_STATIC_OIL_PRICE;
+
+    this.logger.debug(
+      `External pricing used: oil=${externalOilPrice ?? 'fallback'}`,
+    );
+
+    const oilQuote = byCommodity.get(CommodityType.OIL);
+    if (oilQuote !== undefined) {
+      byCommodity.set(CommodityType.OIL, {
+        ...oilQuote,
+        value: oilPrice.toFixed(4),
       });
     }
 
