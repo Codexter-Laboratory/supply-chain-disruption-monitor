@@ -4,6 +4,7 @@ import { useSupplyChainEventSubscription } from '../features/events/hooks/useSup
 import { mapSupplyChainEventToRow } from '../features/events/mappers/supply-chain-event.mapper';
 import { ShipsList } from '../features/ships/components/ShipsList';
 import { useShips } from '../features/ships/hooks/useShips';
+import { Panel } from '../components/panel/Panel';
 import { EnergyTrendChart } from '../features/pricing/components/EnergyTrendChart';
 import { useEnergyPriceTrend } from '../features/pricing/hooks/useEnergyPriceTrend';
 import {
@@ -137,17 +138,13 @@ export function Dashboard() {
 
       <div className={dashboardStyles.energyEventsRow}>
         <div className={dashboardStyles.energySlot}>
-          <EnergyTrendChart
-            kind={trend.data?.kind ?? energyCommodity}
-            points={trend.data?.points ?? []}
-            simpleTrend={trend.data?.simpleTrend ?? 'FLAT'}
-            isLoading={trend.isLoading}
-            error={trend.error as Error | null}
+          <Panel
+            title="Energy Prices"
             headerRight={
-              <div className={dashboardStyles.energyFilterInline}>
+              <div className={dashboardStyles.energyHeaderControls}>
                 <label
                   htmlFor="dashboard-energy-commodity"
-                  className={dashboardStyles.energyFilterLabel}
+                  className={dashboardStyles.controlLabel}
                 >
                   Commodity
                 </label>
@@ -171,7 +168,15 @@ export function Dashboard() {
                 </select>
               </div>
             }
-          />
+          >
+            <EnergyTrendChart
+              kind={trend.data?.kind ?? energyCommodity}
+              points={trend.data?.points ?? []}
+              simpleTrend={trend.data?.simpleTrend ?? 'FLAT'}
+              isLoading={trend.isLoading}
+              error={trend.error as Error | null}
+            />
+          </Panel>
         </div>
         <div className={dashboardStyles.eventsSlot}>
           <LiveSupplyChainPanel rows={eventRows} />

@@ -135,39 +135,69 @@
   min-width: 0;
 }
 
-/* Row: Energy | Live Events | Alerts */
+/* Row: Energy | Live Events | Alerts — fixed height (anchor); panels fill row */
 .energyEventsRow {
   grid-row: 4;
   display: grid;
-  grid-template-columns: 1fr 1.5fr minmax(220px, 1fr);
+  grid-template-columns: 1fr 1.5fr 1fr;
   gap: 1rem;
   min-width: 0;
   align-items: stretch;
+  height: 360px;
 }
 
 .energySlot,
 .eventsSlot,
 .alertsSlot {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
   min-height: 0;
+  height: 100%;
 }
 
-.energyFilterInline {
+.energySlot > :global(section.dashboard-section.panel.panel--stacked.panel--fixedScrollLayout),
+.eventsSlot > :global(section.dashboard-section.panel.panel--stacked.panel--fixedScrollLayout),
+.alertsSlot > :global(section.dashboard-section.panel.panel--stacked.panel--fixedScrollLayout) {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+  height: 100%;
+  max-height: none;
+  overflow: hidden;
+}
+
+.energyHeaderControls {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
+  flex-shrink: 1;
+  min-width: 0;
+  max-width: 100%;
 }
 
-.energyFilterLabel {
-  font-size: 0.75rem;
-  color: var(--text-secondary, #64748b);
+.controlLabel {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  color: var(--text-muted, #64748b);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
 .energyFilterSelect {
-  font-size: 0.85rem;
-  padding: 0.2rem 0.4rem;
+  font-size: 0.8125rem;
+  line-height: 1.25;
+  padding: 0.2rem 0.35rem;
+  min-width: 0;
+  max-width: min(10.5rem, 100%);
+  width: auto;
+  border-radius: 6px;
+  border: 1px solid rgba(148, 163, 184, 0.55);
+  background: #fff;
+  color: #0f172a;
+  
 }
 
 .newsBand {
@@ -179,6 +209,11 @@
   .kpiShipsRow,
   .energyEventsRow {
     grid-template-columns: 1fr;
+  }
+
+  .energyEventsRow {
+    height: auto;
+    min-height: 0;
   }
 
   .mapBody {

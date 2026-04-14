@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useMemo, useState } from 'react';
 import type {
   CommodityType,
   EnergyPrice,
@@ -7,20 +7,25 @@ import type {
 import feedback from '../../../styles/feedback.module.css';
 import styles from './EnergyTrendChart.module.css';
 
+type Timeframe = '24H' | '7D' | '30D';
+
 export interface EnergyTrendChartProps {
   kind: CommodityType;
   points: EnergyPrice[];
   simpleTrend: EnergyPriceTrendDirection;
   isLoading: boolean;
   error?: Error | null;
-  headerRight?: ReactNode;
 }
 
-const TREND_CLASS = {
-  UP: styles.trendUp,
-  DOWN: styles.trendDown,
-  FLAT: styles.trendFlat,
-} as Record<EnergyPriceTrendDirection, string>;
+function smooth(values: number[], window: number): number[] {
+  if (values.length === 0) {
+    return [];
+  }
+  return values.map((_, i) => {
+    const slice = values.slice(Math.max(0, i - window), i + 1);
+    return slice.reduce((a, b) => a + b, 0) / slice.length;
+  });
+}
 
 function sparklinePath(values: number[], width: number, height: number): string {
   if (values.length === 0) return '';
@@ -38,14 +43,7 @@ function sparklinePath(values: number[], width: number, height: number): string 
     .join(' ');
 }
 
-function percentChange(first: number, last: number): string | null {
-  if (!Number.isFinite(first) || !Number.isFinite(last) || first === 0) {
-    return null;
-  }
-  const pct = ((last - first) / first) * 100;
-  const sign = pct > 0 ? '+' : '';
-  return `${sign}${pct.toFixed(2)}%`;
-}
+const TIMEFRAMES: readonly Timeframe[] = ['24H', '7D', '30D'];
 
 export function EnergyTrendChart({
   kind,
@@ -53,78 +51,118 @@ export function EnergyTrendChart({
   simpleTrend,
   isLoading,
   error,
-  headerRight,
 }: EnergyTrendChartProps) {
-  const nums = points.map((p) => Number(p.value)).filter((n) => Number.isFinite(n));
+  const [timeframe, setTimeframe] = useState<Timeframe>('24H');
+
+  const baseNums = useMemo(
+    () => points.map((p) => Number(p.value)).filter((n) => Number.isFinite(n)),
+    [points],
+  );
+
+  const displayNums = useMemo(() => {
+    switch (timeframe) {
+      case '7D':
+        return smooth(baseNums, 3);
+      case '30D':
+        return smooth(baseNums, 6).filter((_, i) => i % 2 === 0);
+      default:
+        return baseNums.slice();
+    }
+  }, [baseNums, timeframe]);
+
   const w = 280;
-  const h = 108;
-  const d = sparklinePath(nums, w, h);
-  const lastPoint = points.length > 0 ? points[points.length - 1] : undefined;
-  const currentValue = lastPoint?.value;
-  const firstNum = nums[0];
-  const lastNum = nums[nums.length - 1];
-  const pct =
-    nums.length >= 2 && firstNum !== undefined && lastNum !== undefined
-      ? percentChange(firstNum, lastNum)
+  const h = 168;
+  const d = sparklinePath(displayNums, w, h);
+
+  const firstNum = displayNums[0];
+  const lastNum = displayNums[displayNums.length - 1];
+  const displayPrice =
+    lastNum !== undefined && Number.isFinite(lastNum)
+      ? lastNum.toFixed(2)
+      : '--';
+  const changePct =
+    firstNum !== undefined &&
+    lastNum !== undefined &&
+    Number.isFinite(firstNum) &&
+    Number.isFinite(lastNum) &&
+    firstNum !== 0
+      ? ((lastNum - firstNum) / firstNum) * 100
       : null;
 
+  const hasRawSeries = baseNums.length > 0;
+  const showPriceBlock = hasRawSeries && displayPrice !== '--';
+  const showChart = displayNums.length >= 2;
+
   return (
-    <section className="dashboard-section panel panel--stacked panel--fixedScrollLayout">
-      <div className={`panel-head ${styles.header}`}>
-        <div className={styles.title}>
-          <h2 className="section-title">Energy Prices</h2>
-          <span className="muted">{kind}</span>
+    <div className={styles.chartBody}>
+      {error ? (
+        <p className={feedback.stateMessageError} role="alert">
+          {error.message}
+        </p>
+      ) : null}
+
+      {isLoading ? (
+        <div className={feedback.stateMessageLoading}>
+          <span className={feedback.spinner} aria-hidden />
+          <span>Loading price trend…</span>
         </div>
-        {headerRight ? (
-          <div className={styles.headerRight}>{headerRight}</div>
-        ) : null}
-      </div>
-
-      <div className={`panel-body ${styles.chartBody}`}>
-        {error ? (
-          <p className={feedback.stateMessageError} role="alert">
-            {error.message}
-          </p>
-        ) : null}
-
-        {isLoading ? (
-          <div className={feedback.stateMessageLoading}>
-            <span className={feedback.spinner} aria-hidden />
-            <span>Loading price trend…</span>
+      ) : (
+        <>
+          <div
+            className={styles.timeframeRow}
+            role="group"
+            aria-label="Chart timeframe"
+          >
+            {TIMEFRAMES.map((tf) => (
+              <button
+                key={tf}
+                type="button"
+                className={
+                  timeframe === tf
+                    ? styles.timeframeButtonActive
+                    : styles.timeframeButton
+                }
+                aria-pressed={timeframe === tf}
+                onClick={() => setTimeframe(tf)}
+              >
+                {tf}
+              </button>
+            ))}
           </div>
-        ) : (
-          <>
-            {currentValue !== undefined ? (
-              <div className={styles.priceCurrent}>
-                <span className={styles.priceCurrentLabel}>Current</span>
-                <span className={`${styles.priceCurrentValue} mono`}>
-                  {currentValue}
-                </span>
-                {pct !== null ? (
-                  <span
-                    className={`${styles.pricePct} ${TREND_CLASS[simpleTrend]}`}
-                  >
-                    {pct}
-                  </span>
-                ) : null}
-              </div>
-            ) : null}
 
-            {nums.length < 2 && !error ? (
-              <p className={feedback.stateMessageEmpty}>
-                No data available yet. Run simulation / pricing ingestion to
-                build history.
-              </p>
-            ) : null}
+          {showPriceBlock ? (
+            <div className={styles.priceBlock}>
+              <div className={`${styles.priceValue} mono`}>{displayPrice}</div>
+              {changePct !== null ? (
+                <div
+                  className={
+                    changePct >= 0
+                      ? styles.priceChangePositive
+                      : styles.priceChangeNegative
+                  }
+                >
+                  {changePct >= 0 ? '▲' : '▼'} {changePct.toFixed(2)}%
+                </div>
+              ) : null}
+            </div>
+          ) : null}
 
-            {nums.length >= 2 ? (
+          {baseNums.length < 2 && !error ? (
+            <p className={feedback.stateMessageEmpty}>
+              No data available yet. Run simulation / pricing ingestion to
+              build history.
+            </p>
+          ) : null}
+
+          {showChart ? (
+            <div className={styles.chartContainer}>
               <svg
                 className={styles.sparkline}
                 viewBox={`0 0 ${w} ${h}`}
                 width="100%"
                 height={h}
                 role="img"
-                aria-label={`${kind} price trend`}
+                aria-label={`${kind} price trend, ${timeframe} (${simpleTrend})`}
               >
                 <path
                   d={d}
@@ -133,10 +171,10 @@ export function EnergyTrendChart({
                   strokeWidth="1.5"
                 />
               </svg>
-            ) : null}
-          </>
-        )}
-      </div>
-    </section>
+            </div>
+          ) : null}
+        </>
+      )}
+    </div>
   );
 }
