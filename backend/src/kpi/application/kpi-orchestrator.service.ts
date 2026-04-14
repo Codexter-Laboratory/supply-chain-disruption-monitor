@@ -3,6 +3,8 @@ import { Inject, Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
 import { PUB_SUB } from '../../realtime/application/pub-sub.token';
 import { KPI_UPDATED_TOPIC } from '../../realtime/application/realtime-topics';
+import { detectAlerts } from '../../alerts/domain/alert-detector';
+import type { Alert } from '../../alerts/domain/alert.entity';
 import { ShipApplicationService } from '../../ships/application/ship.application.service';
 import type {
   CommodityValueMap,
@@ -140,7 +142,18 @@ export class KpiOrchestratorService
     const snapshot = this.kpi.buildSnapshot(sources, {
       commodityUnitPrices: resolved,
     });
-    this.emitUpdate(snapshot);
+
+    let alerts: readonly Alert[] = [];
+    try {
+      alerts = detectAlerts(snapshot);
+    } catch (e) {
+      this.log.warn(
+        `Alert detection failed: ${e instanceof Error ? e.message : String(e)}`,
+      );
+    }
+    const enrichedSnapshot: KpiSnapshot = { ...snapshot, alerts };
+
+    this.emitUpdate(enrichedSnapshot);
     this.log.debug('KPI recompute finished');
   }
 
@@ -174,6 +187,35 @@ function numbersEqual(a: number, b: number): boolean {
   return Math.abs(a - b) < EPSILON;
 }
 
+function alertComparisonKey(x: Alert): string {
+  return `${x.type}|${x.severity}|${x.message}`;
+}
+
+function alertsContentEqual(
+  a: readonly Alert[] | undefined,
+  b: readonly Alert[] | undefined,
+): boolean {
+  const aa = [...(a ?? [])].sort((p, q) =>
+    alertComparisonKey(p).localeCompare(alertComparisonKey(q)),
+  );
+  const bb = [...(b ?? [])].sort((p, q) =>
+    alertComparisonKey(p).localeCompare(alertComparisonKey(q)),
+  );
+  if (aa.length !== bb.length) {
+    return false;
+  }
+  for (let i = 0; i < aa.length; i++) {
+    if (
+      aa[i].type !== bb[i].type ||
+      aa[i].severity !== bb[i].severity ||
+      aa[i].message !== bb[i].message
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
 function snapshotsShallowEqual(
   a: KpiSnapshot | null,
   b: KpiSnapshot,
@@ -190,7 +232,8 @@ function snapshotsShallowEqual(
       a.delayedCargoValueByCommodity,
       b.delayedCargoValueByCommodity,
     ) &&
-    numberRecordsEqual(a.delayedVolumeByCommodity, b.delayedVolumeByCommodity)
+    numberRecordsEqual(a.delayedVolumeByCommodity, b.delayedVolumeByCommodity) &&
+    alertsContentEqual(a.alerts, b.alerts)
   );
 }
 
