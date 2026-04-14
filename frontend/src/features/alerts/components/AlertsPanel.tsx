@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { Panel } from '../../../components/panel/Panel';
 import type { Alert } from '../../../types/api';
 import feedback from '../../../styles/feedback.module.css';
 import styles from './AlertsPanel.module.css';
@@ -33,44 +34,32 @@ function formatAlertTime(iso: string): string {
 
 function AlertsPanelInner({ alerts }: AlertsPanelProps) {
   return (
-    <section
-      className={`${styles.root} dashboard-section panel panel--stacked panel--fixedScrollLayout`}
-      aria-label="Alerts"
-    >
-      <div className="panel-head panel-head--live">
-        <h2 className="section-title">Alerts</h2>
-      </div>
-
-      <div className="panel-body">
+    <Panel title="Alerts" className={styles.root} ariaLabel="Alerts">
+      <div className={styles.scrollArea}>
         {alerts.length === 0 ? (
           <p className={feedback.stateMessageEmpty}>No active alerts</p>
         ) : (
-          <div className={styles.listWrap}>
-            <ul className={styles.list} role="list">
-              {alerts.map((a) => (
-                <li key={a.id} className={styles.row}>
-                  <span
-                    className={severityBadgeClass(a.severity)}
-                    title={a.type}
-                  >
-                    {a.severity}
-                  </span>
-                  <div className={styles.body}>
-                    <p className={styles.message}>{a.message}</p>
-                    <time
-                      className={styles.time}
-                      dateTime={a.createdAt}
-                    >
-                      {formatAlertTime(a.createdAt)}
-                    </time>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <ul className={styles.list} role="list">
+            {alerts.map((a) => (
+              <li key={a.id} className={styles.row}>
+                <span
+                  className={severityBadgeClass(a.severity)}
+                  title={a.type}
+                >
+                  {a.severity}
+                </span>
+                <div className={styles.body}>
+                  <p className={styles.message}>{a.message}</p>
+                  <time className={styles.time} dateTime={a.createdAt}>
+                    {formatAlertTime(a.createdAt)}
+                  </time>
+                </div>
+              </li>
+            ))}
+          </ul>
         )}
       </div>
-    </section>
+    </Panel>
   );
 }
 
