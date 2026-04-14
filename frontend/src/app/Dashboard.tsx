@@ -137,33 +137,40 @@ export function Dashboard() {
 
       <div className={dashboardStyles.energyEventsRow}>
         <div className={dashboardStyles.energySlot}>
-          <div className={dashboardStyles.energyToolbar}>
-            <label htmlFor="dashboard-energy-commodity">Commodity</label>
-            <select
-              id="dashboard-energy-commodity"
-              className={dashboardStyles.energyCommoditySelect}
-              value={energyCommodity}
-              onChange={(e) => {
-                const next = parseCommodityType(e.target.value);
-                if (next !== null) {
-                  setEnergyCommodity(next);
-                }
-              }}
-              aria-label="Energy price commodity"
-            >
-              {COMMODITY_OPTIONS.map((c) => (
-                <option key={c} value={c}>
-                  {c.replaceAll('_', ' ')}
-                </option>
-              ))}
-            </select>
-          </div>
           <EnergyTrendChart
             kind={trend.data?.kind ?? energyCommodity}
             points={trend.data?.points ?? []}
             simpleTrend={trend.data?.simpleTrend ?? 'FLAT'}
             isLoading={trend.isLoading}
             error={trend.error as Error | null}
+            headerRight={
+              <div className={dashboardStyles.energyFilterInline}>
+                <label
+                  htmlFor="dashboard-energy-commodity"
+                  className={dashboardStyles.energyFilterLabel}
+                >
+                  Commodity
+                </label>
+                <select
+                  id="dashboard-energy-commodity"
+                  className={dashboardStyles.energyFilterSelect}
+                  value={energyCommodity}
+                  onChange={(e) => {
+                    const next = parseCommodityType(e.target.value);
+                    if (next !== null) {
+                      setEnergyCommodity(next);
+                    }
+                  }}
+                  aria-label="Energy price commodity"
+                >
+                  {COMMODITY_OPTIONS.map((c) => (
+                    <option key={c} value={c}>
+                      {c.replaceAll('_', ' ')}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            }
           />
         </div>
         <div className={dashboardStyles.eventsSlot}>

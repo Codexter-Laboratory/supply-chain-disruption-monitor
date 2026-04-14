@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type {
   CommodityType,
   EnergyPrice,
@@ -12,6 +13,7 @@ export interface EnergyTrendChartProps {
   simpleTrend: EnergyPriceTrendDirection;
   isLoading: boolean;
   error?: Error | null;
+  headerRight?: ReactNode;
 }
 
 const TREND_CLASS = {
@@ -51,6 +53,7 @@ export function EnergyTrendChart({
   simpleTrend,
   isLoading,
   error,
+  headerRight,
 }: EnergyTrendChartProps) {
   const nums = points.map((p) => Number(p.value)).filter((n) => Number.isFinite(n));
   const w = 280;
@@ -67,9 +70,14 @@ export function EnergyTrendChart({
 
   return (
     <section className="dashboard-section panel panel--stacked panel--fixedScrollLayout">
-      <div className="panel-head">
-        <h2 className="section-title">Energy Prices</h2>
-        <span className="muted">{kind}</span>
+      <div className={`panel-head ${styles.header}`}>
+        <div className={styles.title}>
+          <h2 className="section-title">Energy Prices</h2>
+          <span className="muted">{kind}</span>
+        </div>
+        {headerRight ? (
+          <div className={styles.headerRight}>{headerRight}</div>
+        ) : null}
       </div>
 
       <div className={`panel-body ${styles.chartBody}`}>

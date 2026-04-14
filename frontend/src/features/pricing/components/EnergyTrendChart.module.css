@@ -1,3 +1,21 @@
+.header {
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.85rem;
+  min-width: 0;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+}
+
 .chartBody {
   display: flex;
   flex-direction: column;

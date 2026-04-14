@@ -152,31 +152,22 @@
   min-height: 0;
 }
 
-.energyToolbar {
+.energyFilterInline {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
   gap: 0.5rem;
-  margin-bottom: 0.35rem;
-  flex-wrap: wrap;
 }
 
-.energyToolbar label {
+.energyFilterLabel {
   font-size: 0.75rem;
-  font-weight: 600;
-  color: #64748b;
+  color: var(--text-secondary, #64748b);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
-.energyCommoditySelect {
-  font-size: 0.8125rem;
-  padding: 0.35rem 0.5rem;
-  border-radius: 6px;
-  border: 1px solid rgba(148, 163, 184, 0.55);
-  background: #fff;
-  color: #0f172a;
-  min-width: 10rem;
+.energyFilterSelect {
+  font-size: 0.85rem;
+  padding: 0.2rem 0.4rem;
 }
 
 .newsBand {
