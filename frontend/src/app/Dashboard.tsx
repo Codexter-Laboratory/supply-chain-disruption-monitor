@@ -14,6 +14,7 @@ import {
 import type { CommodityType } from '../types/api';
 import { NewsFeed } from '../features/news/components/NewsFeed';
 import { useRecentNews } from '../features/news/hooks/useRecentNews';
+import { AlertsPanel } from '../features/alerts/components/AlertsPanel';
 import { KpiPanel } from '../features/kpi/components/KpiPanel';
 import { useKpi } from '../features/kpi/hooks/useKpi';
 import { useKpiSubscription } from '../features/kpi/hooks/useKpiSubscription';
@@ -62,6 +63,7 @@ export function Dashboard() {
     () => (kpi.data ? mapKpiSnapshotToPanelView(kpi.data) : null),
     [kpi.data],
   );
+  const alerts = kpi.data?.alerts ?? [];
 
   const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
@@ -166,6 +168,9 @@ export function Dashboard() {
         </div>
         <div className={dashboardStyles.eventsSlot}>
           <LiveSupplyChainPanel rows={eventRows} />
+        </div>
+        <div className={dashboardStyles.alertsSlot}>
+          <AlertsPanel alerts={alerts} />
         </div>
       </div>
 
