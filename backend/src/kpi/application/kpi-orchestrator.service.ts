@@ -21,6 +21,9 @@ import { shipToClassificationSource } from './ship-classification.adapter';
 /** Debounce window for batching ship mutations before one KPI recompute. */
 const KPI_RECOMPUTE_DEBOUNCE_MS = 400;
 
+/** Min time between emitting the same logical alert (signature) to subscribers. */
+const ALERT_COOLDOWN_MS = 60_000;
+
 export const KPI_UPDATED_INTERNAL = 'kpi.updated';
 
 @Injectable()
@@ -41,6 +44,12 @@ export class KpiOrchestratorService
   private recomputing = false;
   private needsAnotherAfterRun = false;
 
+  /**
+   * Last time each alert signature was included in an emitted snapshot (`emitUpdate`).
+   * Used to suppress noisy re-emissions while KPI recomputes often.
+   */
+  private readonly lastEmittedAlerts: Map<string, number> = new Map();
+
   /** In-process listeners (tests, workers); GraphQL uses PubSub separately. */
   private readonly internalEvents = new EventEmitter();
 
@@ -59,6 +68,7 @@ export class KpiOrchestratorService
     }
     this.recomputeScheduled = false;
     this.internalEvents.removeAllListeners();
+    this.lastEmittedAlerts.clear();
   }
 
   /**
@@ -125,6 +135,7 @@ export class KpiOrchestratorService
   private async recomputeWithOptionalPrices(
     commodityUnitPrices: CommodityValueMap | undefined,
   ): Promise<void> {
+    const now = Date.now();
     this.log.debug('KPI recompute started');
     const fleet = await this.ships.listAllShipsOrdered();
     const sources = fleet.map(shipToClassificationSource);
@@ -151,7 +162,11 @@ export class KpiOrchestratorService
         `Alert detection failed: ${e instanceof Error ? e.message : String(e)}`,
       );
     }
-    const enrichedSnapshot: KpiSnapshot = { ...snapshot, alerts };
+    const filteredAlerts = this.filterAlertsByCooldown(alerts, now);
+    this.log.debug(
+      `Filtered alerts: ${alerts.length} → ${filteredAlerts.length}`,
+    );
+    const enrichedSnapshot: KpiSnapshot = { ...snapshot, alerts: filteredAlerts };
 
     this.emitUpdate(enrichedSnapshot);
     this.log.debug('KPI recompute finished');
@@ -178,6 +193,41 @@ export class KpiOrchestratorService
     await this.recompute();
     return this.currentSnapshot!;
   }
+
+  /**
+   * Drops alerts whose signature was emitted recently (cooldown).
+   * Updates {@link lastEmittedAlerts} for each kept alert and prunes stale map entries.
+   */
+  private filterAlertsByCooldown(
+    alerts: readonly Alert[],
+    now: number,
+  ): readonly Alert[] {
+    const out: Alert[] = [];
+    for (const alert of alerts) {
+      const signature = alertSignature(alert);
+      const lastSeen = this.lastEmittedAlerts.get(signature);
+      if (
+        lastSeen !== undefined &&
+        now - lastSeen < ALERT_COOLDOWN_MS
+      ) {
+        continue;
+      }
+      out.push(alert);
+      this.lastEmittedAlerts.set(signature, now);
+    }
+    this.pruneStaleAlertCooldownEntries(now);
+    return out;
+  }
+
+  /** Remove signatures whose last emission is older than 2× cooldown (bounded map). */
+  private pruneStaleAlertCooldownEntries(now: number): void {
+    const maxAge = ALERT_COOLDOWN_MS * 2;
+    for (const [signature, lastSeen] of this.lastEmittedAlerts) {
+      if (now - lastSeen > maxAge) {
+        this.lastEmittedAlerts.delete(signature);
+      }
+    }
+  }
 }
 
 /** Tolerance for comparing aggregated floats (KPI emit deduplication). */
@@ -187,8 +237,8 @@ function numbersEqual(a: number, b: number): boolean {
   return Math.abs(a - b) < EPSILON;
 }
 
-function alertComparisonKey(x: Alert): string {
-  return `${x.type}|${x.severity}|${x.message}`;
+function alertSignature(alert: Alert): string {
+  return `${alert.type}|${alert.severity}|${alert.message}`;
 }
 
 function alertsContentEqual(
@@ -196,10 +246,10 @@ function alertsContentEqual(
   b: readonly Alert[] | undefined,
 ): boolean {
   const aa = [...(a ?? [])].sort((p, q) =>
-    alertComparisonKey(p).localeCompare(alertComparisonKey(q)),
+    alertSignature(p).localeCompare(alertSignature(q)),
   );
   const bb = [...(b ?? [])].sort((p, q) =>
-    alertComparisonKey(p).localeCompare(alertComparisonKey(q)),
+    alertSignature(p).localeCompare(alertSignature(q)),
   );
   if (aa.length !== bb.length) {
     return false;
