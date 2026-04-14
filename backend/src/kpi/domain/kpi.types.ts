@@ -4,6 +4,7 @@ import {
   type ShipClassificationSource,
   type VesselType,
 } from '@supply-chain/maritime-intelligence';
+import type { Alert } from '../../alerts/domain/alert.entity';
 
 export type CommodityValueMap = Record<CommodityType, number>;
 
@@ -56,6 +57,8 @@ export interface KpiSnapshot {
   readonly totalCargoValueByCommodity: CommodityValueMap;
   readonly delayedCargoValueByCommodity: CommodityValueMap;
   readonly delayedVolumeByCommodity: CommodityValueMap;
+  /** Filled by application layer after {@link computeKpiSnapshot}; omitted from pure calculator output. */
+  readonly alerts?: readonly Alert[];
 }
 
 export interface KpiPriceInputs {
