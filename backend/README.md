@@ -43,7 +43,7 @@ Writes:
 |------|------|
 | `ships` | Ship aggregate with pagination and status transitions |
 | `events` | Supply-chain events with persistence and realtime emission |
-| `pricing` | Energy price ingestion and trend queries |
+| `pricing` | Energy price ingestion and trend queries (Nest layers use `infra/` for adapter/factory helpers and `infrastructure/` for Prisma adapters) |
 | `news` | News ingestion with normalization and deduplication |
 | `routes` | Route-related structures (basic support) |
 | `health` | Health check query (operational) |
@@ -56,14 +56,18 @@ Resolvers and Nest modules live under `presentation/`.
 
 ## Simulation
 
-When `SIMULATION_ENABLED=true`, the system continuously simulates real-world activity:
+When `SIMULATION_ENABLED=true`, the orchestrator runs on a fixed interval and drives application-layer ticks:
 
 - generates supply chain events  
 - updates ship statuses  
-- ingests energy prices  
+- runs pricing ingestion (see **Pricing ingestion** below)  
 - ingests news (mock or RSS)  
 
-This allows the system to behave like a live environment without external dependencies.
+This lets the demo feel live without requiring you to trigger work manually.
+
+### Pricing ingestion
+
+`SIMULATION_ENABLED` drives **whether** ingestion ticks run. **`PRICING_MODE`** selects **how** energy quotes are produced on each pricing tick (`simulation` vs `real`). See [`docs/pricing-modes.md`](docs/pricing-modes.md).
 
 ---
 
@@ -134,11 +138,9 @@ This allows the system to behave like a live environment without external depend
 
 Returns a `ShipPage` object: `items`, `total`, `offset`, `limit`.
 
-### Subscription stub
+### GraphQL subscriptions (realtime)
 
-- Subscription name: **`supplyChainUpdateStub`**
-- Payload type: **`SupplyChainUpdateStubPayload`** (placeholder `message` field).
-- No publishers are wired yet; clients can subscribe for **schema and transport checks** only.
+Subscriptions are defined under `src/realtime/presentation/` (e.g. `shipStatusChanged`, `supplyChainEventCreated`, `energyPriceUpdated`) and use the in-process PubSub bridge.
 
 ## Docker (PostgreSQL + API)
 

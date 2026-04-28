@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import type { HttpClientPort } from './http-client.port';
 
+/** Low-level `fetch` adapter implementing `HttpClientPort`; consolidate retries/pooling here in a future HTTP hardening PR. */
+
 const DEFAULT_TIMEOUT_MS = 5000;
 
 @Injectable()

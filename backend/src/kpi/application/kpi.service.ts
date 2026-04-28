@@ -10,7 +10,7 @@ import {
   type KpiSnapshot,
 } from '../domain/kpi.types';
 
-/** Placeholder benchmarks until pricing service is wired. */
+/** Defaults when callers omit explicit prices (production path feeds latest commodities from pricing). */
 const DEFAULT_MOCK_OIL_PRICE_USD_PER_BARREL = 78.5;
 const DEFAULT_MOCK_LNG_PRICE_USD_PER_M3 = 12.3;
 
