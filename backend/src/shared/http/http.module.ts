@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { StubHttpClient } from './stub-http-client';
+import { FetchHttpClient } from './fetch-http-client';
 
 export const HTTP_CLIENT = Symbol('HTTP_CLIENT');
 
 export const httpClientProvider = {
   provide: HTTP_CLIENT,
-  useClass: StubHttpClient,
+  useClass: FetchHttpClient,
 };
 
 @Module({
