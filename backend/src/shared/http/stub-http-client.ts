@@ -8,4 +8,10 @@ export class StubHttpClient implements HttpClientPort {
       'HttpClient.get() called but no real HTTP client is configured',
     );
   }
+
+  async getText(): Promise<string> {
+    throw new Error(
+      'HttpClient.getText() called but no real HTTP client is configured',
+    );
+  }
 }

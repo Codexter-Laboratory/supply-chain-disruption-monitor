@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import type { HttpClientPort } from '../../shared/http/http-client.port';
 import type {
   NewsFeedProviderPort,
   RawNewsArticle,
@@ -6,26 +7,22 @@ import type {
 import { parseRssItems } from './rss-items.parser';
 
 /**
- * Fetches a single RSS/Atom-style XML feed via global `fetch` (not `HttpClientPort`;
- * consolidating news HTTP with the shared adapter is deferred to migration work).
- * Falls back to empty on network/parse errors.
+ * Fetches a single RSS/Atom-style XML feed via `HttpClientPort.getText` (shared timeout/policy).
  */
 @Injectable()
 export class RssNewsFeedProvider implements NewsFeedProviderPort {
   private readonly log = new Logger(RssNewsFeedProvider.name);
 
-  constructor(private readonly feedUrl: string) {}
+  constructor(
+    private readonly feedUrl: string,
+    private readonly http: HttpClientPort,
+  ) {}
 
   async fetchArticles(): Promise<readonly RawNewsArticle[]> {
     try {
-      const res = await fetch(this.feedUrl, {
+      const xml = await this.http.getText(this.feedUrl, {
         headers: { 'User-Agent': 'SupplyChainMonitor/1.0' },
       });
-      if (!res.ok) {
-        this.log.warn(`RSS fetch ${res.status} for ${this.feedUrl}`);
-        return [];
-      }
-      const xml = await res.text();
       let hostname = 'RSS';
       try {
         hostname = new URL(this.feedUrl).hostname;
@@ -34,9 +31,13 @@ export class RssNewsFeedProvider implements NewsFeedProviderPort {
       }
       return parseRssItems(xml, hostname);
     } catch (e) {
-      this.log.warn(
-        `RSS fetch failed: ${e instanceof Error ? e.message : String(e)}`,
-      );
+      const msg = e instanceof Error ? e.message : String(e);
+      const httpMatch = /^HTTP error:\s*(\d+)$/.exec(msg);
+      if (httpMatch !== null) {
+        this.log.warn(`RSS fetch ${httpMatch[1]} for ${this.feedUrl}`);
+        return [];
+      }
+      this.log.warn(`RSS fetch failed: ${msg}`);
       return [];
     }
   }
