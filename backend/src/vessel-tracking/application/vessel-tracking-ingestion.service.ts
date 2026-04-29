@@ -9,6 +9,7 @@ import { SHIP_REPOSITORY } from '../../ships/application/ship.repository.port';
 import { SHIP_WRITE_PORT } from '../../ships/application/ship-write.port';
 import type { ShipRepositoryPort } from '../../ships/application/ship.repository.port';
 import type { ShipWritePort } from '../../ships/application/ship-write.port';
+import { LiveEventDerivationService } from '../../events/application/live-event-derivation.service';
 import { RoutesApplicationService } from '../../routes/application/routes.application.service';
 import type { NormalizedVesselPosition } from '../domain/normalized-vessel-position';
 import {
@@ -37,6 +38,7 @@ export class VesselTrackingIngestionService {
     @Inject(SHIP_REPOSITORY) private readonly ships: ShipRepositoryPort,
     @Inject(SHIP_WRITE_PORT) private readonly shipWrite: ShipWritePort,
     @Inject(REALTIME_PUBLISHER) private readonly realtime: RealtimePublisherPort,
+    private readonly liveDerivation: LiveEventDerivationService,
     private readonly routes: RoutesApplicationService,
     private readonly status: VesselTrackingStatusStore,
   ) {}
@@ -122,6 +124,20 @@ export class VesselTrackingIngestionService {
     }
 
     const occurredAt = occurredAtForRealtime(obs.observedAt);
+    try {
+      await this.liveDerivation.deriveFromObservation({
+        shipId: ship.id,
+        currentStatus: ship.currentStatus,
+        currentPosition: ship.position,
+        observation: obs,
+        occurredAt,
+        routeLegId: null,
+      });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      this.log.warn(`Live event derivation failed: ${truncateStatusMessage(msg)}`);
+    }
+
     if (obs.destination !== undefined && obs.eta !== undefined) {
       try {
         await this.routes.syncCurrentLegFromObservation({

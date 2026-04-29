@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { getVesselTrackingMode } from '../../config/source-mode.config';
+import { EventsModule } from '../../events/presentation/events.module';
 import { RoutesModule } from '../../routes/presentation/routes.module';
 import { HttpClientModule } from '../../shared/http/http.module';
 import { ShipsModule } from '../../ships/presentation/ships.module';
@@ -14,7 +15,7 @@ import { RealAisVesselTrackingProvider } from '../infrastructure/real-ais-vessel
 import { SimulationVesselTrackingProvider } from '../infrastructure/simulation-vessel-tracking.provider';
 
 @Module({
-  imports: [ShipsModule, RoutesModule, HttpClientModule],
+  imports: [ShipsModule, RoutesModule, EventsModule, HttpClientModule],
   providers: [
     VesselTrackingStatusStore,
     SimulationVesselTrackingProvider,
