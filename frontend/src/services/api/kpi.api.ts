@@ -42,10 +42,15 @@ export function mergeNewerKpiSnapshot(
   const prev = normalizeKpiAlerts(previous);
   const tNext = Date.parse(next.computedAt);
   const tPrev = Date.parse(prev.computedAt);
-  if (!Number.isFinite(tNext)) {
+  const incomingOk = Number.isFinite(tNext);
+  const previousOk = Number.isFinite(tPrev);
+  if (!incomingOk && previousOk) {
+    return prev;
+  }
+  if (incomingOk && !previousOk) {
     return next;
   }
-  if (!Number.isFinite(tPrev)) {
+  if (!incomingOk && !previousOk) {
     return next;
   }
   return tNext >= tPrev ? next : prev;
