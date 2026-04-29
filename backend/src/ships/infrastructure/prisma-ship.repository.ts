@@ -15,6 +15,11 @@ export class PrismaShipRepository implements ShipRepositoryPort {
     return row ? shipFromPrismaRow(row) : null;
   }
 
+  async findByImo(imo: string): Promise<Ship | null> {
+    const row = await this.prisma.ship.findUnique({ where: { imo } });
+    return row ? shipFromPrismaRow(row) : null;
+  }
+
   async findPage(offset: number, limit: number): Promise<ShipPage> {
     const [total, rows] = await Promise.all([
       this.prisma.ship.count(),

@@ -7,6 +7,8 @@ export const SHIP_REPOSITORY = Symbol('SHIP_REPOSITORY');
 /** Read-only ship persistence; returns domain entities only (no Prisma/DTO types). */
 export interface ShipRepositoryPort {
   findById(id: string): Promise<Ship | null>;
+  /** Unique IMO as stored in persistence (trim before call for consistent matching). */
+  findByImo(imo: string): Promise<Ship | null>;
   findPage(offset: number, limit: number): Promise<ShipPage>;
   /** Axis-aligned bounds in degrees; antimeridian not handled. */
   findInBoundingBox(box: ShipGeoBoundingBox): Promise<readonly Ship[]>;

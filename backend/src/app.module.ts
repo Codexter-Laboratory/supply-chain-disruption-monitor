@@ -15,6 +15,7 @@ import { HealthModule } from './health/presentation/health.module';
 import { KpiModule } from './kpi/kpi.module';
 import { SourceModeBootstrap } from './config/source-mode.bootstrap';
 import { SupplyChainSimulationOrchestrator } from './simulation/supply-chain-simulation.orchestrator';
+import { VesselTrackingModule } from './vessel-tracking/presentation/vessel-tracking.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { SupplyChainSimulationOrchestrator } from './simulation/supply-chain-sim
     PricingModule,
     NewsModule,
     KpiModule,
+    VesselTrackingModule,
   ],
   providers: [SourceModeBootstrap, SupplyChainSimulationOrchestrator],
 })
