@@ -12,16 +12,22 @@ import { SimulationVesselTrackingProvider } from '../infrastructure/simulation-v
 @Module({
   imports: [ShipsModule],
   providers: [
+    SimulationVesselTrackingProvider,
+    RealAisVesselTrackingProvider,
     VesselTrackingIngestionService,
     {
       provide: VESSEL_TRACKING_PROVIDER,
-      useFactory: (): VesselTrackingProviderPort => {
+      useFactory: (
+        simulation: SimulationVesselTrackingProvider,
+        realAis: RealAisVesselTrackingProvider,
+      ): VesselTrackingProviderPort => {
         const mode = getVesselTrackingMode();
         if (mode === 'real') {
-          return new RealAisVesselTrackingProvider();
+          return realAis;
         }
-        return new SimulationVesselTrackingProvider();
+        return simulation;
       },
+      inject: [SimulationVesselTrackingProvider, RealAisVesselTrackingProvider],
     },
   ],
   exports: [VesselTrackingIngestionService],

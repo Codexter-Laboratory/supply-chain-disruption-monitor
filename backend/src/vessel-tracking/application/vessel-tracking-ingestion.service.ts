@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Coordinates } from '../../common/domain/coordinates';
 import {
   REALTIME_PUBLISHER,
@@ -20,6 +20,8 @@ export const POSITION_EPSILON_DEGREES = 0.00001;
 
 @Injectable()
 export class VesselTrackingIngestionService {
+  private readonly log = new Logger(VesselTrackingIngestionService.name);
+
   constructor(
     @Inject(VESSEL_TRACKING_PROVIDER)
     private readonly vesselSource: VesselTrackingProviderPort,
@@ -32,7 +34,18 @@ export class VesselTrackingIngestionService {
    * Applies provider observations to existing ships only. Not scheduled by default; call from a worker/cron later.
    */
   async ingestLatestPositions(): Promise<void> {
-    const observations = await this.vesselSource.fetchLatestPositions();
+    let observations: readonly NormalizedVesselPosition[];
+    try {
+      observations = await this.vesselSource.fetchLatestPositions();
+    } catch (e) {
+      this.log.warn(
+        `Vessel tracking provider fetch failed: ${
+          e instanceof Error ? e.message : String(e)
+        }`,
+      );
+      return;
+    }
+
     for (const obs of observations) {
       await this.applyObservation(obs);
     }
@@ -62,9 +75,11 @@ export class VesselTrackingIngestionService {
 
     await this.shipWrite.updatePosition(ship.id, coords);
 
+    const occurredAt = occurredAtForRealtime(obs.observedAt);
+
     await this.realtime.publish(
       new ShipStatusChangedRealtimeEvent(
-        obs.observedAt,
+        occurredAt,
         ship.id,
         ship.currentStatus,
         ship.currentStatus,
@@ -83,4 +98,12 @@ export class VesselTrackingIngestionService {
       Math.abs(existing.longitude - next.longitude) > POSITION_EPSILON_DEGREES
     );
   }
+}
+
+function occurredAtForRealtime(observedAt: Date): Date {
+  if (!(observedAt instanceof Date)) {
+    return new Date();
+  }
+  const t = observedAt.getTime();
+  return Number.isFinite(t) ? observedAt : new Date();
 }
