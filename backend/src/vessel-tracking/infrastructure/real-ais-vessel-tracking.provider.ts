@@ -3,6 +3,7 @@ import type { HttpClientPort } from '../../shared/http/http-client.port';
 import { HTTP_CLIENT } from '../../shared/http/http.module';
 import { SHIP_REPOSITORY } from '../../ships/application/ship.repository.port';
 import type { ShipRepositoryPort } from '../../ships/application/ship.repository.port';
+import { VesselTrackingStatusStore } from '../application/vessel-tracking-status.store';
 import type { NormalizedVesselPosition } from '../domain/normalized-vessel-position';
 import type { VesselTrackingProviderPort } from '../application/vessel-tracking-provider.port';
 import {
@@ -21,23 +22,66 @@ export class RealAisVesselTrackingProvider implements VesselTrackingProviderPort
   constructor(
     @Inject(HTTP_CLIENT) private readonly http: HttpClientPort,
     @Inject(SHIP_REPOSITORY) private readonly ships: ShipRepositoryPort,
+    private readonly status: VesselTrackingStatusStore,
   ) {}
 
   async fetchLatestPositions(): Promise<readonly NormalizedVesselPosition[]> {
+    const now = new Date();
+    this.status.patchProvider({
+      lastAttemptAt: now,
+      providerName: 'real-ais',
+    });
+
     const config = getAisTrackingConfig();
     if (config === null) {
+      this.status.patchProvider({
+        configured: false,
+        providerName: 'real-ais',
+        lastFailureAt: null,
+        lastErrorMessage: null,
+        lastSuccessAt: null,
+        knownImosRequested: 0,
+        recordsReceived: 0,
+        recordsNormalized: 0,
+        recordsReturned: 0,
+        recordsSkipped: 0,
+      });
       return [];
     }
+
+    this.status.patchProvider({
+      configured: true,
+      providerName: config.providerName,
+    });
 
     let rawImos: readonly string[];
     try {
       rawImos = await this.ships.findKnownImos();
     } catch {
+      this.status.patchProvider({
+        lastFailureAt: now,
+        lastErrorMessage: 'known_imos_lookup_failed',
+        knownImosRequested: 0,
+        recordsReceived: 0,
+        recordsNormalized: 0,
+        recordsReturned: 0,
+        recordsSkipped: 0,
+      });
       return [];
     }
 
     const imos = dedupeTrimmedImos(rawImos);
     if (imos.length === 0) {
+      this.status.patchProvider({
+        lastSuccessAt: now,
+        lastFailureAt: null,
+        lastErrorMessage: null,
+        knownImosRequested: 0,
+        recordsReceived: 0,
+        recordsNormalized: 0,
+        recordsReturned: 0,
+        recordsSkipped: 0,
+      });
       return [];
     }
 
@@ -50,13 +94,50 @@ export class RealAisVesselTrackingProvider implements VesselTrackingProviderPort
       body = await this.http.get<AisApiResponse>(url, {
         headers: { Authorization: `Bearer ${config.apiKey}` },
       });
-    } catch {
+    } catch (e) {
+      const msg = sanitizeErrorMessage(e);
+      this.status.patchProvider({
+        lastFailureAt: now,
+        lastErrorMessage: msg,
+        knownImosRequested: imos.length,
+        recordsReceived: 0,
+        recordsNormalized: 0,
+        recordsReturned: 0,
+        recordsSkipped: 0,
+      });
       return [];
     }
 
-    const normalized = normalizeAisPayload(body, config.providerName);
-    return normalized.filter((p) => knownImoSet.has(p.imo.trim()));
+    const rows = extractRecordArray(body);
+    const received = rows.length;
+    const normalized = normalizeAisRows(rows, config.providerName);
+    const normCount = normalized.length;
+    const filtered = normalized.filter((p) => knownImoSet.has(p.imo.trim()));
+    const returned = filtered.length;
+    const skipped = Math.max(0, received - returned);
+
+    this.status.patchProvider({
+      lastSuccessAt: now,
+      lastFailureAt: null,
+      lastErrorMessage: null,
+      knownImosRequested: imos.length,
+      recordsReceived: received,
+      recordsNormalized: normCount,
+      recordsReturned: returned,
+      recordsSkipped: skipped,
+    });
+
+    return filtered;
   }
+}
+
+function sanitizeErrorMessage(e: unknown): string {
+  const raw = e instanceof Error ? e.message : String(e);
+  const t = raw.trim();
+  if (t.length === 0) {
+    return 'http_error';
+  }
+  return t.length > 240 ? `${t.slice(0, 240)}…` : t;
 }
 
 function dedupeTrimmedImos(imos: readonly string[]): string[] {
@@ -73,11 +154,10 @@ function dedupeTrimmedImos(imos: readonly string[]): string[] {
   return out;
 }
 
-function normalizeAisPayload(
-  body: unknown,
+function normalizeAisRows(
+  rows: readonly unknown[],
   source: string,
 ): NormalizedVesselPosition[] {
-  const rows = extractRecordArray(body);
   const out: NormalizedVesselPosition[] = [];
   for (const row of rows) {
     const pos = tryNormalizeRecord(row, source);

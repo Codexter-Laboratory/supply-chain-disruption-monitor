@@ -26,4 +26,6 @@ Today, **pricing** may use live commodity HTTP **only when** `PRICING_MODE` reso
 
 **Vessel tracking (`VESSEL_TRACKING_MODE=real`)** uses provider-configured HTTP (`AIS_API_BASE_URL`, `AIS_API_KEY`, optional `AIS_PROVIDER_NAME`) to fetch positions **only for IMOs already stored on ships**; responses are normalized conservatively (no new ships from AIS). Ingestion remains opt-in (not scheduled by default).
 
+**Observability:** GraphQL query **`vesselTrackingHealth`** returns in-memory provider + ingestion freshness counters (resets on app restart). The existing **`health`** query is unchanged. Nothing is scheduled automatically.
+
 Other domains read their mode string at startup (see `SourceModeBootstrap` logs) but do **not** branch runtime behaviour yet on these env vars unless existing code paths already consulted them.
