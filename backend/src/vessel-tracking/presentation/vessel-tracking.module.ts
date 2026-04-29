@@ -3,6 +3,8 @@ import { getVesselTrackingMode } from '../../config/source-mode.config';
 import { HttpClientModule } from '../../shared/http/http.module';
 import { ShipsModule } from '../../ships/presentation/ships.module';
 import { VesselTrackingIngestionService } from '../application/vessel-tracking-ingestion.service';
+import { VesselTrackingStatusStore } from '../application/vessel-tracking-status.store';
+import { VesselTrackingHealthResolver } from './vessel-tracking-health.resolver';
 import {
   VESSEL_TRACKING_PROVIDER,
   type VesselTrackingProviderPort,
@@ -13,9 +15,11 @@ import { SimulationVesselTrackingProvider } from '../infrastructure/simulation-v
 @Module({
   imports: [ShipsModule, HttpClientModule],
   providers: [
+    VesselTrackingStatusStore,
     SimulationVesselTrackingProvider,
     RealAisVesselTrackingProvider,
     VesselTrackingIngestionService,
+    VesselTrackingHealthResolver,
     {
       provide: VESSEL_TRACKING_PROVIDER,
       useFactory: (
