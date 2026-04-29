@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { HttpClientPort } from './http-client.port';
+import type { HttpClientPort, HttpGetOptions } from './http-client.port';
 
 /** Low-level `fetch` adapter implementing `HttpClientPort`; consolidate retries/pooling here in a future HTTP hardening PR. */
 
@@ -7,13 +7,17 @@ const DEFAULT_TIMEOUT_MS = 5000;
 
 @Injectable()
 export class FetchHttpClient implements HttpClientPort {
-  async get<T>(
-    url: string,
-    options?: {
-      headers?: Record<string, string>;
-      query?: Record<string, string | number>;
-    },
-  ): Promise<T> {
+  async get<T>(url: string, options?: HttpGetOptions): Promise<T> {
+    const res = await this.fetchOkResponse(url, options);
+    return (await res.json()) as T;
+  }
+
+  async getText(url: string, options?: HttpGetOptions): Promise<string> {
+    const res = await this.fetchOkResponse(url, options);
+    return await res.text();
+  }
+
+  private async fetchOkResponse(url: string, options?: HttpGetOptions): Promise<Response> {
     const queryString =
       options?.query !== undefined && Object.keys(options.query).length > 0
         ? `?${Object.entries(options.query)
@@ -41,7 +45,7 @@ export class FetchHttpClient implements HttpClientPort {
         throw new Error(`HTTP error: ${res.status}`);
       }
 
-      return (await res.json()) as T;
+      return res;
     } catch (err) {
       if (
         err instanceof DOMException &&
