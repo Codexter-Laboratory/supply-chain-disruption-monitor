@@ -12,6 +12,12 @@ export type OpenRouteLegInput = {
   readonly sequence: number;
 };
 
+export type ReplaceCurrentRouteLegInput = {
+  readonly currentRouteLegId: string;
+  readonly closeAt: Date;
+  readonly next: OpenRouteLegInput;
+};
+
 export interface RouteLegRepositoryPort {
   findHistoryForShip(shipId: string): Promise<readonly RouteLeg[]>;
   findCurrentForShip(shipId: string): Promise<RouteLeg | null>;
@@ -19,4 +25,5 @@ export interface RouteLegRepositoryPort {
   openLeg(input: OpenRouteLegInput): Promise<RouteLeg>;
   updateEstimatedArrival(routeLegId: string, eta: Date): Promise<void>;
   closeLeg(routeLegId: string, closedAt: Date): Promise<void>;
+  replaceCurrentLeg(input: ReplaceCurrentRouteLegInput): Promise<RouteLeg>;
 }

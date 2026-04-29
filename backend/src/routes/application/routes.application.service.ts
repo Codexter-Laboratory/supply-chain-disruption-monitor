@@ -64,9 +64,11 @@ export class RoutesApplicationService {
       return;
     }
 
-    await this.legs.closeLeg(current.id, observedAt);
     const latest = await this.legs.findLatestSequenceForShip(input.shipId);
-    await this.legs.openLeg({
+    await this.legs.replaceCurrentLeg({
+      currentRouteLegId: current.id,
+      closeAt: observedAt,
+      next: {
       shipId: input.shipId,
       originPort: current.destinationPort || UNKNOWN_ORIGIN_PORT,
       destinationPort: destination,
@@ -74,6 +76,7 @@ export class RoutesApplicationService {
       estimatedArrival: eta,
       openedAt: observedAt,
       sequence: Math.max(latest, current.sequence) + 1,
+      },
     });
   }
 }

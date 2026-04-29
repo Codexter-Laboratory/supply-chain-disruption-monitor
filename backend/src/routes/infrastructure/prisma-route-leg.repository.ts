@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import {
   type OpenRouteLegInput,
+  type ReplaceCurrentRouteLegInput,
   RouteLegRepositoryPort,
 } from '../application/route-leg.repository.port';
 import { RouteLeg } from '../domain/route-leg.entity';
@@ -63,5 +64,26 @@ export class PrismaRouteLegRepository implements RouteLegRepositoryPort {
       where: { id: routeLegId },
       data: { closedAt },
     });
+  }
+
+  async replaceCurrentLeg(input: ReplaceCurrentRouteLegInput): Promise<RouteLeg> {
+    const row = await this.prisma.$transaction(async (tx) => {
+      await tx.shipRouteLeg.update({
+        where: { id: input.currentRouteLegId },
+        data: { closedAt: input.closeAt },
+      });
+      return await tx.shipRouteLeg.create({
+        data: {
+          shipId: input.next.shipId,
+          originPort: input.next.originPort,
+          destinationPort: input.next.destinationPort,
+          departureDate: input.next.departureDate,
+          estimatedArrival: input.next.estimatedArrival,
+          openedAt: input.next.openedAt,
+          sequence: input.next.sequence,
+        },
+      });
+    });
+    return routeLegFromPrisma(row);
   }
 }

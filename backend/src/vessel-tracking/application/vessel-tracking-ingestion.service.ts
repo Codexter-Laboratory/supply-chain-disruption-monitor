@@ -121,14 +121,7 @@ export class VesselTrackingIngestionService {
       return 'skipped_unknown_imo';
     }
 
-    if (!this.positionMateriallyChanged(ship.position, coords)) {
-      return 'skipped_unchanged_position';
-    }
-
-    await this.shipWrite.updatePosition(ship.id, coords);
-
     const occurredAt = occurredAtForRealtime(obs.observedAt);
-
     if (obs.destination !== undefined && obs.eta !== undefined) {
       try {
         await this.routes.syncCurrentLegFromObservation({
@@ -142,6 +135,12 @@ export class VesselTrackingIngestionService {
         this.log.warn(`Route leg sync failed: ${truncateStatusMessage(msg)}`);
       }
     }
+
+    if (!this.positionMateriallyChanged(ship.position, coords)) {
+      return 'skipped_unchanged_position';
+    }
+
+    await this.shipWrite.updatePosition(ship.id, coords);
 
     await this.realtime.publish(
       new ShipStatusChangedRealtimeEvent(
