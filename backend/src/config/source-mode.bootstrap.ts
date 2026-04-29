@@ -13,10 +13,10 @@ export class SourceModeBootstrap implements OnModuleInit {
   private readonly log = new Logger('SourceMode');
 
   onModuleInit(): void {
-    this.log.log(`Pricing (${getPricingMode()})`);
-    this.log.log(`News (${getNewsMode()})`);
-    this.log.log(`Vessel tracking (${getVesselTrackingMode()})`);
-    this.log.log(`Routes (${getRoutesMode()})`);
-    this.log.log(`Events (${getEventsMode()})`);
+    this.log.log(`Source mode: pricing=${getPricingMode()}`);
+    this.log.log(`Source mode: news=${getNewsMode()}`);
+    this.log.log(`Source mode: vesselTracking=${getVesselTrackingMode()}`);
+    this.log.log(`Source mode: routes=${getRoutesMode()}`);
+    this.log.log(`Source mode: events=${getEventsMode()}`);
   }
 }

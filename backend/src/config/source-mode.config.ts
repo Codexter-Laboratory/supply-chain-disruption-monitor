@@ -9,10 +9,10 @@ export function parseSourceMode(
   raw: string | undefined,
   fallback: SourceMode,
 ): SourceMode {
-  if (raw === undefined || raw === null) {
+  if (raw === undefined) {
     return fallback;
   }
-  const s = String(raw).trim().toLowerCase();
+  const s = raw.trim().toLowerCase();
   if (s === 'simulation' || s === 'real' || s === 'hybrid') {
     return s as SourceMode;
   }
