@@ -8,16 +8,16 @@ const DEFAULT_TIMEOUT_MS = 5000;
 @Injectable()
 export class FetchHttpClient implements HttpClientPort {
   async get<T>(url: string, options?: HttpGetOptions): Promise<T> {
-    const res = await this.fetchOkResponse(url, options);
-    return (await res.json()) as T;
+    return this.fetchOkBody(url, options, async (res) =>
+      (await res.json()) as T,
+    );
   }
 
   async getText(url: string, options?: HttpGetOptions): Promise<string> {
-    const res = await this.fetchOkResponse(url, options);
-    return await res.text();
+    return this.fetchOkBody(url, options, (res) => res.text());
   }
 
-  private async fetchOkResponse(url: string, options?: HttpGetOptions): Promise<Response> {
+  private buildFullUrl(url: string, options?: HttpGetOptions): string {
     const queryString =
       options?.query !== undefined && Object.keys(options.query).length > 0
         ? `?${Object.entries(options.query)
@@ -27,8 +27,18 @@ export class FetchHttpClient implements HttpClientPort {
             )
             .join('&')}`
         : '';
+    return `${url}${queryString}`;
+  }
 
-    const fullUrl = `${url}${queryString}`;
+  /**
+   * One timeout for the entire operation: handshake, headers, non-OK check, and body consumption.
+   */
+  private async fetchOkBody<R>(
+    url: string,
+    options: HttpGetOptions | undefined,
+    readBody: (res: Response) => Promise<R>,
+  ): Promise<R> {
+    const fullUrl = this.buildFullUrl(url, options);
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
 
@@ -45,7 +55,7 @@ export class FetchHttpClient implements HttpClientPort {
         throw new Error(`HTTP error: ${res.status}`);
       }
 
-      return res;
+      return await readBody(res);
     } catch (err) {
       if (
         err instanceof DOMException &&
