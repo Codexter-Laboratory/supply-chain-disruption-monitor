@@ -1,13 +1,13 @@
+import { parseSourceMode } from '../../config/source-mode.config';
+
 export type PricingMode = 'simulation' | 'real';
 
 /**
- * How quote ingestion chooses its provider (see {@link createEnergyPriceQuoteProvider}).
- * Defaults to `simulation` when unset or invalid.
+ * How quote ingestion chooses its provider (`createEnergyPriceQuoteProvider` factory).
+ * Uses {@link parseSourceMode}; values other than `real` (including `hybrid`) map to `simulation`
+ * until the factory supports additional modes.
  */
 export function getPricingMode(): PricingMode {
-  const raw = process.env.PRICING_MODE?.trim().toLowerCase();
-  if (raw === 'real') {
-    return 'real';
-  }
-  return 'simulation';
+  const mode = parseSourceMode(process.env.PRICING_MODE, 'simulation');
+  return mode === 'real' ? 'real' : 'simulation';
 }

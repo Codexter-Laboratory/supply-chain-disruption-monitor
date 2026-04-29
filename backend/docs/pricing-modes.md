@@ -1,5 +1,7 @@
 # Pricing ingestion modes (`PRICING_MODE`)
 
+See also **[`source-modes.md`](source-modes.md)** for cross-cutting source-mode env keys (pricing is one domain).
+
 Energy price **quotes** (what runs on each ingestion tick) are selected by **`PRICING_MODE`**:
 
 | Value | Meaning |

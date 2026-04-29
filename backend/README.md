@@ -67,7 +67,8 @@ This lets the demo feel live without requiring you to trigger work manually.
 
 ### Pricing ingestion
 
-`SIMULATION_ENABLED` drives **whether** ingestion ticks run. **`PRICING_MODE`** selects **how** energy quotes are produced on each pricing tick (`simulation` vs `real`). See [`docs/pricing-modes.md`](docs/pricing-modes.md).
+`SIMULATION_ENABLED` drives **whether** ingestion ticks run. **`PRICING_MODE`** selects **how** energy quotes are produced on each pricing tick (`simulation` vs `real`). See [`docs/pricing-modes.md`](docs/pricing-modes.md); broader readiness notes live in [`docs/source-modes.md`](docs/source-modes.md).
+
 
 ---
 
