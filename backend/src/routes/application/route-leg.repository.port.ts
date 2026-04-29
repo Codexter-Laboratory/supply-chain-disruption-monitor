@@ -24,6 +24,5 @@ export interface RouteLegRepositoryPort {
   findLatestSequenceForShip(shipId: string): Promise<number>;
   openLeg(input: OpenRouteLegInput): Promise<RouteLeg>;
   updateEstimatedArrival(routeLegId: string, eta: Date): Promise<void>;
-  closeLeg(routeLegId: string, closedAt: Date): Promise<void>;
   replaceCurrentLeg(input: ReplaceCurrentRouteLegInput): Promise<RouteLeg>;
 }

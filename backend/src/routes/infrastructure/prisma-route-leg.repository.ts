@@ -59,19 +59,15 @@ export class PrismaRouteLegRepository implements RouteLegRepositoryPort {
     });
   }
 
-  async closeLeg(routeLegId: string, closedAt: Date): Promise<void> {
-    await this.prisma.shipRouteLeg.update({
-      where: { id: routeLegId },
-      data: { closedAt },
-    });
-  }
-
   async replaceCurrentLeg(input: ReplaceCurrentRouteLegInput): Promise<RouteLeg> {
     const row = await this.prisma.$transaction(async (tx) => {
-      await tx.shipRouteLeg.update({
-        where: { id: input.currentRouteLegId },
+      const closed = await tx.shipRouteLeg.updateMany({
+        where: { id: input.currentRouteLegId, closedAt: null },
         data: { closedAt: input.closeAt },
       });
+      if (closed.count !== 1) {
+        throw new Error('Current route leg is no longer open');
+      }
       return await tx.shipRouteLeg.create({
         data: {
           shipId: input.next.shipId,

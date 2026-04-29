@@ -69,13 +69,13 @@ export class RoutesApplicationService {
       currentRouteLegId: current.id,
       closeAt: observedAt,
       next: {
-      shipId: input.shipId,
-      originPort: current.destinationPort || UNKNOWN_ORIGIN_PORT,
-      destinationPort: destination,
-      departureDate: observedAt,
-      estimatedArrival: eta,
-      openedAt: observedAt,
-      sequence: Math.max(latest, current.sequence) + 1,
+        shipId: input.shipId,
+        originPort: current.destinationPort || UNKNOWN_ORIGIN_PORT,
+        destinationPort: destination,
+        departureDate: observedAt,
+        estimatedArrival: eta,
+        openedAt: observedAt,
+        sequence: Math.max(latest, current.sequence) + 1,
       },
     });
   }
