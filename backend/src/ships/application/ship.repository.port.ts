@@ -9,6 +9,8 @@ export interface ShipRepositoryPort {
   findById(id: string): Promise<Ship | null>;
   /** Unique IMO as stored in persistence (trim before call for consistent matching). */
   findByImo(imo: string): Promise<Ship | null>;
+  /** Distinct persisted IMOs (vessel-tracking / external feed correlation only). */
+  findKnownImos(): Promise<readonly string[]>;
   findPage(offset: number, limit: number): Promise<ShipPage>;
   /** Axis-aligned bounds in degrees; antimeridian not handled. */
   findInBoundingBox(box: ShipGeoBoundingBox): Promise<readonly Ship[]>;
