@@ -13,15 +13,47 @@ interface KpiUpdatedMessage {
   kpiUpdated?: KpiSnapshot;
 }
 
-export async function getKpiSnapshot(): Promise<KpiSnapshot> {
-  const data = await graphqlHttpClient.request<GetKpiSnapshotResponse>(
-    GET_KPI_SNAPSHOT_QUERY,
-  );
-  const s = data.getKpiSnapshot;
+function normalizeKpiAlerts(s: KpiSnapshot): KpiSnapshot {
   return {
     ...s,
     alerts: Array.isArray(s.alerts) ? s.alerts : [],
   };
+}
+
+export async function getKpiSnapshot(): Promise<KpiSnapshot> {
+  const data = await graphqlHttpClient.request<GetKpiSnapshotResponse>(
+    GET_KPI_SNAPSHOT_QUERY,
+  );
+  return normalizeKpiAlerts(data.getKpiSnapshot);
+}
+
+/**
+ * Resolves churn when HTTP and GraphQL subscriptions both update the same cache:
+ * whoever has the newer `computedAt` wins (older snapshots must not replace newer live data).
+ */
+export function mergeNewerKpiSnapshot(
+  previous: KpiSnapshot | undefined,
+  incoming: KpiSnapshot,
+): KpiSnapshot {
+  const next = normalizeKpiAlerts(incoming);
+  if (previous === undefined) {
+    return next;
+  }
+  const prev = normalizeKpiAlerts(previous);
+  const tNext = Date.parse(next.computedAt);
+  const tPrev = Date.parse(prev.computedAt);
+  const incomingOk = Number.isFinite(tNext);
+  const previousOk = Number.isFinite(tPrev);
+  if (!incomingOk && previousOk) {
+    return prev;
+  }
+  if (incomingOk && !previousOk) {
+    return next;
+  }
+  if (!incomingOk && !previousOk) {
+    return next;
+  }
+  return tNext >= tPrev ? next : prev;
 }
 
 export interface KpiUpdatedHandlers {
@@ -39,10 +71,7 @@ export function subscribeKpiUpdated(handlers: KpiUpdatedHandlers): () => void {
       next: (result) => {
         const snap = result.data?.kpiUpdated;
         if (snap) {
-          handlers.next({
-            ...snap,
-            alerts: Array.isArray(snap.alerts) ? snap.alerts : [],
-          });
+          handlers.next(normalizeKpiAlerts(snap));
         }
       },
       error: handlers.error ?? (() => {}),

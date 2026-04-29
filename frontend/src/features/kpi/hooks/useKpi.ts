@@ -1,5 +1,9 @@
-import { useQuery } from '@tanstack/react-query';
-import { getKpiSnapshot, type KpiSnapshot } from '../../../services/api/kpi.api';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  getKpiSnapshot,
+  mergeNewerKpiSnapshot,
+  type KpiSnapshot,
+} from '../../../services/api/kpi.api';
 import { KPI_SNAPSHOT_QUERY_KEY } from '../kpi.constants';
 
 export type { KpiSnapshot };
@@ -14,9 +18,16 @@ export interface UseKpiResult {
 
 /** HTTP snapshot only; pair with {@link useKpiSubscription} for live updates. */
 export function useKpi(): UseKpiResult {
+  const queryClient = useQueryClient();
   const query = useQuery({
     queryKey: KPI_SNAPSHOT_QUERY_KEY,
-    queryFn: getKpiSnapshot,
+    queryFn: async () => {
+      const incoming = await getKpiSnapshot();
+      const previous = queryClient.getQueryData<KpiSnapshot>(
+        KPI_SNAPSHOT_QUERY_KEY,
+      );
+      return mergeNewerKpiSnapshot(previous, incoming);
+    },
     staleTime: Number.POSITIVE_INFINITY,
     gcTime: Number.POSITIVE_INFINITY,
     refetchOnWindowFocus: false,
