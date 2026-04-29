@@ -56,7 +56,6 @@ export class VesselTrackingIngestionService {
       this.log.warn(`Vessel tracking provider fetch failed: ${msg}`);
       this.status.patchIngestion({
         lastIngestionFailureAt: attemptAt,
-        lastIngestionSuccessAt: null,
         lastIngestionErrorMessage: truncateStatusMessage(msg),
         lastPositionsApplied: 0,
         lastPositionsSkipped: 0,
@@ -68,7 +67,21 @@ export class VesselTrackingIngestionService {
     let applied = 0;
     let skipped = 0;
     for (const obs of observations) {
-      const r = await this.applyObservation(obs);
+      let r: ApplyObservationResult;
+      try {
+        r = await this.applyObservation(obs);
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        this.log.warn(`Vessel tracking observation apply failed: ${msg}`);
+        this.status.patchIngestion({
+          lastIngestionFailureAt: new Date(),
+          lastIngestionErrorMessage: truncateStatusMessage(msg),
+          lastPositionsApplied: applied,
+          lastPositionsSkipped: skipped,
+          lastProviderObservations: observations.length,
+        });
+        return;
+      }
       if (r === 'applied') {
         applied += 1;
       } else {
