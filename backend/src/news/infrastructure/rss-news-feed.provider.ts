@@ -6,7 +6,9 @@ import type {
 import { parseRssItems } from './rss-items.parser';
 
 /**
- * Fetches a single RSS/Atom-style XML feed. Falls back to empty on network/parse errors.
+ * Fetches a single RSS/Atom-style XML feed via global `fetch` (not `HttpClientPort`;
+ * consolidating news HTTP with the shared adapter is deferred to migration work).
+ * Falls back to empty on network/parse errors.
  */
 @Injectable()
 export class RssNewsFeedProvider implements NewsFeedProviderPort {

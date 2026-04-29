@@ -12,8 +12,9 @@ import { MarketSignal } from '../../domain/market-signal';
 import { mapMarketSignalToCommodity } from '../../domain/market-signal.mapper';
 
 /**
- * Placeholder “real” quotes: static per-signal prices, mapped to commodities.
- * Colliding commodities take the first signal in enum order (BRENT beats WTI for OIL, etc.).
+ * “Real” energy quotes: per-signal static baselines, then OIL overwritten from
+ * injected `ExternalPricingApiPort` when valid (currently BRENT for OIL). Colliding commodities
+ * take the first signal in enum order (BRENT beats WTI for OIL, etc.).
  */
 const STATIC_PRICE_BY_SIGNAL: Record<MarketSignal, number> = {
   [MarketSignal.BRENT_CRUDE]: 80,
