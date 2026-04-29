@@ -41,6 +41,8 @@ export class RealAisVesselTrackingProvider implements VesselTrackingProviderPort
       return [];
     }
 
+    const knownImoSet = new Set(imos);
+
     const url = appendKnownImosQuery(config.baseUrl, imos);
 
     let body: unknown;
@@ -52,7 +54,8 @@ export class RealAisVesselTrackingProvider implements VesselTrackingProviderPort
       return [];
     }
 
-    return normalizeAisPayload(body, config.providerName);
+    const normalized = normalizeAisPayload(body, config.providerName);
+    return normalized.filter((p) => knownImoSet.has(p.imo.trim()));
   }
 }
 

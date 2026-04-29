@@ -5,10 +5,6 @@ export type AisTrackingConfig = {
   readonly providerName: string;
 };
 
-/**
- * Returns `null` when AIS HTTP is not configured (missing URL or key). Never throws.
- * Values are trimmed; secrets must not be logged by callers.
- */
 /** Appends `imos=<comma-separated, URL-encoded>` to the configured base URL (supports existing `?` in base). */
 export function appendKnownImosQuery(
   baseUrl: string,
@@ -21,6 +17,10 @@ export function appendKnownImosQuery(
   return `${base}${sep}imos=${encoded}`;
 }
 
+/**
+ * Returns `null` when AIS HTTP is not configured (missing URL or key). Never throws.
+ * Values are trimmed; secrets must not be logged by callers.
+ */
 export function getAisTrackingConfig(): AisTrackingConfig | null {
   const baseUrl = process.env.AIS_API_BASE_URL?.trim() ?? '';
   const apiKey = process.env.AIS_API_KEY?.trim() ?? '';
