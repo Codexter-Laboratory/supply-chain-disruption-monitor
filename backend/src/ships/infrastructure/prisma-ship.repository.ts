@@ -20,6 +20,14 @@ export class PrismaShipRepository implements ShipRepositoryPort {
     return row ? shipFromPrismaRow(row) : null;
   }
 
+  async findKnownImos(): Promise<readonly string[]> {
+    const rows = await this.prisma.ship.findMany({
+      select: { imo: true },
+      orderBy: { imo: 'asc' },
+    });
+    return rows.map((r) => r.imo);
+  }
+
   async findPage(offset: number, limit: number): Promise<ShipPage> {
     const [total, rows] = await Promise.all([
       this.prisma.ship.count(),

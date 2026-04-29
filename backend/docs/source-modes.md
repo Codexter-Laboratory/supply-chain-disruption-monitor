@@ -24,4 +24,6 @@ Independent env keys describe **how each bounded context is intended** to resolv
 
 Today, **pricing** may use live commodity HTTP **only when** `PRICING_MODE` resolves to **`real`** in `getPricingMode()` (`parseSourceMode`; only `simulation` and `real` affect the pricing factory—and only **OIL/BRENT** is wired via the external adapter).
 
+**Vessel tracking (`VESSEL_TRACKING_MODE=real`)** uses provider-configured HTTP (`AIS_API_BASE_URL`, `AIS_API_KEY`, optional `AIS_PROVIDER_NAME`) to fetch positions **only for IMOs already stored on ships**; responses are normalized conservatively (no new ships from AIS). Ingestion remains opt-in (not scheduled by default).
+
 Other domains read their mode string at startup (see `SourceModeBootstrap` logs) but do **not** branch runtime behaviour yet on these env vars unless existing code paths already consulted them.
