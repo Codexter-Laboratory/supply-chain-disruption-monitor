@@ -13,6 +13,7 @@ import { PricingModule } from './pricing/presentation/pricing.module';
 import { NewsModule } from './news/presentation/news.module';
 import { HealthModule } from './health/presentation/health.module';
 import { KpiModule } from './kpi/kpi.module';
+import { SourceModeBootstrap } from './config/source-mode.bootstrap';
 import { SupplyChainSimulationOrchestrator } from './simulation/supply-chain-simulation.orchestrator';
 
 @Module({
@@ -37,6 +38,6 @@ import { SupplyChainSimulationOrchestrator } from './simulation/supply-chain-sim
     NewsModule,
     KpiModule,
   ],
-  providers: [SupplyChainSimulationOrchestrator],
+  providers: [SourceModeBootstrap, SupplyChainSimulationOrchestrator],
 })
 export class AppModule {}
