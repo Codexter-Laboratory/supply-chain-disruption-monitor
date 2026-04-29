@@ -29,6 +29,7 @@ import {
 
 const DEFAULT_EVENT_LIMIT = 20;
 const MAX_EVENT_LIMIT = 100;
+const LIVE_EVENT_DEDUPE_WINDOW_MS = 30 * 60 * 1000;
 
 const STATUS_CYCLE: ShipOperationalStatus[] = [
   'MOVING',
@@ -182,6 +183,72 @@ export class EventsApplicationService {
     this.kpiRefresh.scheduleRecompute();
   }
 
+  async recordDerivedEvent(input: {
+    shipId: string;
+    routeLegId?: string | null;
+    type: 'DELAY' | 'INCIDENT' | 'REROUTE' | 'CLEARANCE';
+    occurredAt: Date;
+    description: string;
+    latitude?: number | null;
+    longitude?: number | null;
+    region?: string | null;
+    dedupeKey?: string;
+  }): Promise<SupplyChainEvent | null> {
+    const description = input.description.trim();
+    if (!description) {
+      return null;
+    }
+    const occurredAt =
+      input.occurredAt instanceof Date && Number.isFinite(input.occurredAt.getTime())
+        ? input.occurredAt
+        : new Date();
+    const dedupeKey = normalizeDedupeKey(input.dedupeKey ?? description);
+
+    const recent = await this.events.findRecentForShip(input.shipId, 20);
+    for (const e of recent) {
+      if (e.type !== input.type) {
+        continue;
+      }
+      if (Math.abs(occurredAt.getTime() - e.timestamp.getTime()) > LIVE_EVENT_DEDUPE_WINDOW_MS) {
+        continue;
+      }
+      if (normalizeDedupeKey(e.description) === dedupeKey) {
+        return null;
+      }
+    }
+
+    const hasCoords =
+      input.latitude != null &&
+      input.longitude != null &&
+      Number.isFinite(input.latitude) &&
+      Number.isFinite(input.longitude);
+    const saved = await this.events.insert({
+      shipId: input.shipId,
+      routeLegId: input.routeLegId ?? null,
+      type: input.type,
+      timestamp: occurredAt,
+      description,
+      ...(hasCoords
+        ? { latitude: input.latitude, longitude: input.longitude }
+        : {}),
+      ...(input.region !== undefined ? { region: input.region } : {}),
+    });
+
+    await this.realtime.publish(
+      new SupplyChainEventCreatedRealtimeEvent(
+        occurredAt,
+        saved.id,
+        saved.shipId,
+        saved.type,
+        saved.position?.latitude ?? null,
+        saved.position?.longitude ?? null,
+        saved.region,
+      ),
+    );
+    this.kpiRefresh.scheduleRecompute();
+    return saved;
+  }
+
   async findSupplyChainEventById(id: string): Promise<SupplyChainEvent | null> {
     return this.events.findById(id);
   }
@@ -194,4 +261,8 @@ export class EventsApplicationService {
     const safe = Math.min(Math.max(raw, 1), MAX_EVENT_LIMIT);
     return this.events.findRecentForShip(shipId, safe);
   }
+}
+
+function normalizeDedupeKey(raw: string): string {
+  return raw.trim().toLowerCase().replace(/\s+/g, ' ');
 }
