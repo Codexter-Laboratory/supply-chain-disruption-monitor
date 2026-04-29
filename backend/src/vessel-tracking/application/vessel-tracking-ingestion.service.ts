@@ -9,6 +9,7 @@ import { SHIP_REPOSITORY } from '../../ships/application/ship.repository.port';
 import { SHIP_WRITE_PORT } from '../../ships/application/ship-write.port';
 import type { ShipRepositoryPort } from '../../ships/application/ship.repository.port';
 import type { ShipWritePort } from '../../ships/application/ship-write.port';
+import { RoutesApplicationService } from '../../routes/application/routes.application.service';
 import type { NormalizedVesselPosition } from '../domain/normalized-vessel-position';
 import {
   VESSEL_TRACKING_PROVIDER,
@@ -36,6 +37,7 @@ export class VesselTrackingIngestionService {
     @Inject(SHIP_REPOSITORY) private readonly ships: ShipRepositoryPort,
     @Inject(SHIP_WRITE_PORT) private readonly shipWrite: ShipWritePort,
     @Inject(REALTIME_PUBLISHER) private readonly realtime: RealtimePublisherPort,
+    private readonly routes: RoutesApplicationService,
     private readonly status: VesselTrackingStatusStore,
   ) {}
 
@@ -126,6 +128,20 @@ export class VesselTrackingIngestionService {
     await this.shipWrite.updatePosition(ship.id, coords);
 
     const occurredAt = occurredAtForRealtime(obs.observedAt);
+
+    if (obs.destination !== undefined && obs.eta !== undefined) {
+      try {
+        await this.routes.syncCurrentLegFromObservation({
+          shipId: ship.id,
+          destination: obs.destination,
+          eta: obs.eta,
+          observedAt: occurredAt,
+        });
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        this.log.warn(`Route leg sync failed: ${truncateStatusMessage(msg)}`);
+      }
+    }
 
     await this.realtime.publish(
       new ShipStatusChangedRealtimeEvent(
