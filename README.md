@@ -1,6 +1,6 @@
 # Supply Chain Disruption Monitor
 
-A real-time supply chain monitoring system that simulates global shipping activity, energy price fluctuations, and disruption events — all streamed live through a GraphQL-based architecture.
+A real-time supply chain monitoring system that simulates global shipping activity, energy price fluctuations, and disruption events, all streamed live through a GraphQL-based architecture.
 
 ---
 
